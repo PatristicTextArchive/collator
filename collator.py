@@ -236,13 +236,13 @@ def wrap_table_html(table_array):
     return html
 
 
-def write_html_to_file(html_input):
+def write_html_to_file(html_input, output_file):
     """Write the html document to a file. Return file object.
 
     Keyword Arguments:
     html_input -- html document as string.
     """
-    with open('output.html', 'w') as f:
+    with open(output_file, 'w') as f:
         f.write(html_input)
         logging.info(f'f.name created.')
     return f
@@ -268,6 +268,11 @@ if __name__ == "__main__":
     collation_table = run_collatex(json_tmp_file)
     html_table = collation_table_html(collation_table)
     output_html = wrap_table_html(html_table)
-    html_file = write_html_to_file(output_html)
+
+    if args['--output']:
+        output_file = args['--output']
+    else:
+        output_file = 'output.html'
+    html_file = write_html_to_file(output_html, output_file)
 
     logging.info('Results returned sucessfully.')
