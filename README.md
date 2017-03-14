@@ -3,6 +3,12 @@ number of TEI XML transcriptions of a text. It uses the collation features
 provided by [CollateX](https://collatex.net/) and creates a HTML document with a
 representation of the witnesses that is inspired by the CollateX HTML output.
 
+It is basically a wrapper for the CollateX CLI. It converts the witnesses into
+plain text with a very small xslt-script (and therefore also uses saxon -- maybe
+I could cut that dependency). It then reads those witnesses into a JSON
+temporary file that it feeds to CollateX which returns a nested list that it
+processes into a HTML representation.
+
 This is developed to handle [LombardPress
 Schema](http://lombardpress.org/schema/docs/) compliant material, but it might
 handle many other TEI documents well for now, as the encoding conventions of the
