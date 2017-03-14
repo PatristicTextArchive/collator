@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Usage: collator.py [options] <file> <file>...
 
@@ -16,13 +16,12 @@ Options:
 """
 
 from docopt import docopt
-import subprocess
-import logging
-import sys
 import json
-import tempfile
-import os
+import logging
 import re
+import subprocess
+import tempfile
+
 
 def convert_xml_to_plaintext(xml_files):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
@@ -53,16 +52,14 @@ def convert_xml_to_plaintext(xml_files):
          ]
        }
     """
-    output_dict = { "witnesses": [] }
+    output_dict = {'witnesses': []}
     for file in xml_files:
-       logging.debug(f"Start conversion of {file}")
-       buffer = subprocess.run(['saxon', f'-s:{file}', f'-xsl:./conversion-script.xslt'],
-                               stdout=subprocess.PIPE).stdout
-       dict = {
-           "id": re.search("\{witness:([^}]+)\}", str(buffer)).group(1),
-           "content": re.search("\{content:(.*)}", str(buffer)).group(1)
-       }
-       output_dict["witnesses"].append(dict)
+        logging.debug(f'Start conversion of {file}')
+        buffer = subprocess.run(['saxon', f'-s:{file}', f'-xsl:./conversion-script.xslt'],
+                                stdout=subprocess.PIPE).stdout
+        witness_dictionary = dict(id=re.search('\{witness:([^}]+)\}', str(buffer)).group(1),
+                                  content=re.search('\{content:(.*)}', str(buffer)).group(1))
+        output_dict['witnesses'].append(witness_dictionary)
     return output_dict
 
 
@@ -75,6 +72,7 @@ def write_collation_file(input_dict):
     fp = tempfile.NamedTemporaryFile(mode='w')
     fp.write(json.dumps(input_dict))
     return fp
+
 
 def run_collatex(input_file):
     """Run the collatex script on the temporary file.
@@ -92,6 +90,7 @@ def run_collatex(input_file):
         raise Exception(err)
     return json.loads(out)
 
+
 def collation_table_html(table):
     """Process the collation table and return a HTML representation of it.
 
@@ -100,12 +99,8 @@ def collation_table_html(table):
     """
     numbered_witnesses = {k: wit for k, wit in enumerate(table['witnesses'])}
 
-    table_array = []
+    table_array = [[] for wit in numbered_witnesses]  # Create rows for all the witnesses.
     col_widths = []
-
-    # Create table rows
-    for witness in numbered_witnesses:
-        table_array.append([])
 
     for cell in table['table']:
 
@@ -130,7 +125,7 @@ def collation_table_html(table):
             # witnesses.
             if wit not in compared:
                 # Add the witness to list of equals, as unique witnesses go to the result list too.
-                wit_eqs = []
+                wit_eqs = list()
                 wit_eqs.append(wit)
                 # If there are other witnesses with the same content, check which
                 if popped in tmp.values():
@@ -166,7 +161,6 @@ def collation_table_html(table):
             len(sorted(cleaned_content.values(), key=lambda x: len(x), reverse=True)[0])
         )
 
-
     shift_row = []
     width_sum = 0
 
@@ -194,10 +188,10 @@ def collation_table_html(table):
                 shifted_array[i].append(row_list)
         prev_cutoff = cutoff
 
-    return shifted_array, shift_row
+    return shifted_array
 
 
-def wrap_table_html(table_array, shift_row):
+def wrap_table_html(table_array):
     """Wrap the html table in a html document. Return html document as string.
 
     Keyword Arguments:
@@ -211,7 +205,9 @@ def wrap_table_html(table_array, shift_row):
         <title>HTML collation</title>
         <style>
         td { border: 1px solid #d3d3d3; white-space: nowrap; padding: 0.25em; }
-        table.alignment { border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;}
+        table.alignment {
+            border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;
+        }
         td.green { background-color: #eaffea; }
         td.blue { background-color: #ECEFFF; }
         td.red { background-color: #ffecec; }
@@ -232,13 +228,13 @@ def wrap_table_html(table_array, shift_row):
             html += '</tr>'
         html += '</table>'
 
-
     html += """
     </div>
     </body>
     </html>
     """
     return html
+
 
 def write_html_to_file(html_input):
     """Write the html document to a file. Return file object.
@@ -248,6 +244,7 @@ def write_html_to_file(html_input):
     """
     with open('output.html', 'w') as f:
         f.write(html_input)
+        logging.info(f'f.name created.')
     return f
 
 
@@ -269,11 +266,8 @@ if __name__ == "__main__":
     witnesses = convert_xml_to_plaintext(args["<file>"])
     json_tmp_file = write_collation_file(witnesses)
     collation_table = run_collatex(json_tmp_file)
-    html_table, shift_row = collation_table_html(collation_table)
-    output_html = wrap_table_html(html_table, shift_row)
+    html_table = collation_table_html(collation_table)
+    output_html = wrap_table_html(html_table)
     html_file = write_html_to_file(output_html)
-    print(html_file)
-
-
 
     logging.info('Results returned sucessfully.')
