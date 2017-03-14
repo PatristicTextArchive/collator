@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Quaestiones in libros De anima</title>
+        <author>Johannes Dinsdale</author>
+        <editor>Michael Stenskjær Christensen</editor>
+      </titleStmt>
+      <editionStmt>
+        <edition n="2017.02">
+          <title><!-- title [{ms-identifier} Transcription] --></title>
+          <date when="2017-02-27">February 27, 2017</date>
+        </edition>
+      </editionStmt>
+      <publicationStmt>
+        <authority>
+          <ref target="http://representationandreality.gu.se">
+            Representation and Reality: Historical and Contemporary Perspectives
+            on the Aristotelian Tradition
+          </ref>
+        </authority>
+        <availability status="free">
+          <p>Published under a <ref target="http://creativecommons.org/licenses/by-nc-nd/3.0/">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 License</ref></p>
+        </availability>
+        <date when="2017-02-27">February 27, 2017</date>
+      </publicationStmt>
+      <sourceDesc>
+        <listWit>
+          <witness xml:id="B" n="bal">Oxford, Balliol College 311, ff. 148r--181v</witness>
+        </listWit>
+      </sourceDesc>
+    </fileDesc>
+    <revisionDesc status="draft">
+      <listChange>
+        <change when="2017-02-27" who="#" status="draft" n="2017.03">
+          <p>Created file for the first time.</p>
+          <note type="status">
+            <note type="collobaration">Yes</note>
+            <note type="validating-schema">lbp-1.0.0</note>
+            <note type="transcription-type">documentary</note>
+          </note>
+        </change>
+      </listChange>
+    </revisionDesc>
+  </teiHeader>
+  <text xml:lang="la">
+    <front>
+      <div xml:id="starts-on">
+        <pb ed="#B" n="148-r"/><cb ed="#B" n="b"/>
+      </div>
+    </front>
+    <body>
+      <div xml:id="da-49-l1prooemium">
+        <p xml:id="da-49-l1prooemium-zikn00">
+          <lb ed="#B"/> <quote><supplied>B</supplied>onorum honorabilium</quote> et cetera
+          <lb ed="#B"/> Philosophus in secundo <choice><orig>phisicorum</orig><reg>physicorum</reg></choice> volens investigare
+          ter<lb ed="#B"/>minos et limites considerationis <choice><orig>phisicae</orig><reg>physicae</reg></choice>
+          <lb ed="#B"/> sive naturalis sic ait usquequo oportet <choice><orig>phisicum</orig><reg>physicum</reg></choice> speciem et quod quid
+          <lb ed="#B"/> est est considerare id est usque ad quem terminum se
+          ex<lb ed="#B"/>tendit <choice><orig>consideracio</orig><reg>consideratio</reg></choice> naturalis de formis <choice><orig>que</orig><reg>quae</reg></choice> pertinent  ad quod quid est
+          <lb ed="#B"/> et <unclear>respondet</unclear> dicens quod quemadmodum medicus considerat nervum<pc type="punctus-elevatus"/> et
+          <lb ed="#B"/> fabrum <choice><orig>es</orig><reg>aes</reg></choice><pc type="punctus"/> ita <choice><orig>phisicus</orig><reg>physicus</reg></choice> considerat formam et speciem et quod quid est
+          <lb ed="#B"/> quia non omnis <choice><orig>consideracio</orig><reg>consideratio</reg></choice> nervi spectat ad medicum<pc type="punctus-medius"/> nec quicquid
+          <lb ed="#B"/> considerare potest de aere pertinet ad fabrum<pc type="punctus-medius"/> sic nec omnis
+          con<lb ed="#B"/>sideratio de formis pertinet ad <choice><orig>phisicum</orig><reg>physicum</reg></choice><pc type="punctus"/> advidendeum ergo <subst><del><choice><orig>queri</orig><reg>quaeri</reg></choice></del><add place="margin-right">qualiter</add></subst>
+          <lb ed="#B"/> artifices <choice><orig>predicti</orig><reg>praedicti</reg></choice> <unclear>considerint</unclear> de <choice><orig>predictis</orig><reg>praedictis</reg></choice><pc type="punctus-medius"/> videndum est <unclear>qualis</unclear> <subst><del rend="expunctuation">est</del><add place="above-line">sit</add></subst>
+          con<lb ed="#B"/>sideratio medici et fabri<pc type="punctus-elevatus"/> medicus enim principaliter intendit
+          sa<lb ed="#B"/>nitatem facere<pc type="punctus-medius"/> unde si de nervo consideret hoc est ut in eo
+          in<lb ed="#B"/>ducatur sanitas et ideo <choice><orig>quecumque</orig><reg>quaecumque</reg></choice> <choice><orig>consideracio</orig><reg>consideratio</reg></choice> de nervo prout <unclear>deservit</unclear>
+          <lb ed="#B"/> sanitati pertinet ad medicum<pc type="punctus-medius"/> si autem sit aliqua <choice><orig>consideracio</orig><reg>consideratio</reg></choice>
+          transcen<lb ed="#B"/>dens de nervo superfugiet <choice><orig>consideracionem</orig><reg>considerationem</reg></choice> medici<pc type="punctus-medius"/> <unclear>similiter quo..?</unclear>
+          <lb ed="#B"/> faber <add place="above-line">quia</add> considerat de materia rerum sive instrumentorum artificialium
+          <lb ed="#B"/> <choice><orig>quecumque</orig><reg>quaecumque</reg></choice> <choice><orig>consideracio</orig><reg>consideratio</reg></choice> est eris prout est materia vasorum artificialium
+          <lb ed="#B"/> pertinet ad eius <choice><orig>consideracionem</orig><reg>considerationem</reg></choice><pc type="horizontal-stroke"/> si autem sit aliqua <choice><orig>consideracio</orig><reg>consideratio</reg></choice> transcendens
+          <lb ed="#B"/> transfugiet eius <choice><orig>consideracionem</orig><reg>considerationem</reg></choice><pc type="punctus-medius"/> Ex hiis potest patere ad <choice><orig>que</orig><reg>quae</reg></choice>
+          ex<lb ed="#B"/>tendit <choice><orig>consideracio</orig><reg>consideratio</reg></choice> naturalis seu <choice><orig>phisici</orig><reg>physici</reg></choice><pc type="horizontal-stroke"/> quicquid enim a <choice><orig>phisico</orig><reg>physico</reg></choice>
+          con<lb ed="#B"/>sideratur motui subicitur<pc type="horizontal-stroke"/> <choice><orig>quecumque</orig><reg>quaecumque</reg></choice> vero movent non mota non
+          <lb ed="#B"/> sunt <choice><orig>phisice</orig><reg>physicae</reg></choice> considerationis ut dicitur in secundo <choice><orig>phisicorum</orig><reg>physicorum</reg></choice> et <unclear>etiam</unclear> in tertio
+          eius<lb ed="#B"/>dem forme vero omnino <choice><orig>inmateriales</orig><reg>immateriales</reg></choice> non <choice><orig>coniuncte</orig><reg>coniunctae</reg></choice> <choice><orig>materie</orig><reg>materiae</reg></choice> nec <choice><orig>subiecte</orig><reg>subiectae</reg></choice> sunt
+          <lb ed="#B"/> motui nec transmutationi<pc type="punctus-elevatus"/> superfigiunt considerationem <choice><orig>phisici</orig><reg>physici</reg></choice> sive
+          <lb ed="#B"/> naturalis<pc type="punctus-medius"/> sed forma <choice><orig>que</orig><reg>quae</reg></choice> quodammodo est immaterialis et quodammodo <choice><orig>perfeccio</orig><reg>perfectio</reg></choice> <choice><orig>materie</orig><reg>materiae</reg></choice>
+          <lb ed="#B"/> est de consideratione naturalis seu <choice><orig>phisici</orig><reg>physici</reg></choice><pc type="punctus-medius"/> et est ultimum in quod potest
+          <lb ed="#B"/> <choice><orig>consideracio</orig><reg>consideratio</reg></choice> <choice><orig>phisica</orig><reg>physica</reg></choice><pc type="punctus-medius"/> talis forma est anima humana et ideo est
+          li<lb ed="#B"/>mes et <unclear>terminus</unclear> considerationis naturalis<pc type="punctus-medius"/> unde distingvere possumus quod tres sunt
+          <lb ed="#B"/> gradus formarum<pc type="horizontal-stroke"/> <choice><orig>quedam</orig><reg>quaedam</reg></choice> sunt penitus immaterialis et secundum suam substantiam
+          <lb ed="#B"/> et secundum suam dispositionem cuiusmodi sunt <choice><orig>substantie</orig><reg>substantiae</reg></choice> <choice><orig>separate</orig><reg>separatae</reg></choice> <choice><orig>que</orig><reg>quae</reg></choice> sunt <choice><orig>preter</orig><reg>praeter</reg></choice> omnem materiam
+          <lb ed="#B"/> sensibilem et intelligibilem ut dicitur VIIIo <choice><orig>methaphysice</orig><reg>methaphysicae</reg></choice><pc type="punctus-medius"/> et <choice><orig>quedam</orig><reg>quaedam</reg></choice> sunt
+          <lb ed="#B"/> <choice><orig>forme</orig><reg>formae</reg></choice> penitus materiales et secundum substantiam et secundum dispositionem<pc type="punctus-medius"/> quia et eorum
+          <choice><orig>essen<lb ed="#B"/>tie</orig><reg>essen<lb ed="#B"/>tiae</reg></choice> et potentie a potentiis <choice><orig>materie</orig><reg>materiae</reg></choice> sunt <choice><orig>educte</orig><reg>eductae</reg></choice> ut <choice><orig>forme</orig><reg>formae</reg></choice> istorum sensibilium
+          <lb ed="#B"/> <unclear>infimorum</unclear><pc type="horizontal-stroke"/> <choice><orig>quedam</orig><reg>quaedam</reg></choice> vero sunt <choice><orig>forme</orig><reg>formae</reg></choice> medio modo se habentes <choice><orig>que</orig><reg>quae</reg></choice> secundum suam
+          <lb ed="#B"/> substantiam sunt immateriales<pc type="horizontal-stroke"/> secundum tamen dispositiones materiales ut <choice><orig>anime</orig><reg>animae</reg></choice> <choice><orig>humane</orig><reg>humanae</reg></choice>
+          <lb ed="#B"/> unde <choice><orig>prime</orig><reg>primae</reg></choice> <choice><orig>forme</orig><reg>formae</reg></choice> sunt <choice><orig>preter</orig><reg>praeter</reg></choice> considerationem <choice><orig>phisicam</orig><reg>physicam</reg></choice> sed a secundis
+          for<lb ed="#B"/>mis incipit <choice><orig>consideracio</orig><reg>consideratio</reg></choice> <choice><orig>phisica</orig><reg>physica</reg></choice> et terminatur ad formas ultimo
+          <lb ed="#B"/> dictas incipit enim eius <choice><orig>consideracio</orig><reg>consideratio</reg></choice> a formis ultimis et terminatur ad
+          <lb ed="#B"/> animam humanam ex hiis etiam patet quem ordinem tenet iste liber inter
+          <lb ed="#B"/> libros naturales<pc type="horizontal-stroke"/> quia modus <choice><orig>phisicus</orig><reg>physicus</reg></choice> et modus <choice><orig>methaphisicus</orig><reg>metaphysicus</reg></choice> quodammodo sunt oppositi
+          <lb ed="#B"/> modus enim <choice><orig>phisicus</orig><reg>physicus</reg></choice> habet statum in <choice><orig>suppremo</orig><reg>supremo</reg></choice> sed non habet statum in
+          <lb ed="#B"/> infimo habet enim statum quemadmodum abstractionis quia aliqua sunt ita
+          <lb ed="#B"/> abstracta quid extendunt <choice><orig>consideracionem</orig><reg>considerationem</reg></choice> <choice><orig>phisicam</orig><reg>physicam</reg></choice> et aliqua sunt ita
+          abs<lb ed="#B"/>tracta quod ultimo ea non considerat<pc type="horizontal-stroke"/> sed quemadmodum
+          <choice><orig>concrecio<lb ed="#B"/>nis</orig><reg>concretio<lb ed="#B"/>nis</reg></choice> non habet <choice><orig>phisicus</orig><reg>physicus</reg></choice> statum<pc type="punctus-medius"/> non enim  est aliqua forma ita concreta <unclear>aut</unclear>
+          <lb ed="#B"/> superfugiat naturalis<pc type="punctus-medius"/> immo quanto forma magis est <choice><orig>materie</orig><reg>materiae</reg></choice> concreta<pc type="punctus-medius"/>
+          tan<lb ed="#B"/>to magis sub eius consideratione cadit et hoc est intelligendum supposita
+          <lb ed="#B"/> universalitate seu abstractione a singularibus<pc type="horizontal-stroke"/> si enim ad individua et numero
+          <lb ed="#B"/> singularia consideramus hoc extendit considerationem <choice><orig>phisicum</orig><reg>physicam</reg></choice> sed modus metaphysicus est econtrario<pc type="horizontal-stroke"/> statum enim habet in infimo<pc type="punctus"/> sed <subst><del rend="expunctuation">ad <unclear>hunc</unclear></del><add place="above-line">non</add></subst>
+          sta<lb ed="#B"/>tum in <choice><orig>suppremo</orig><reg>supremo</reg></choice> quia aliqua forma est ita <choice><orig>materie</orig><reg>materiae</reg></choice> concreta quod non pertinet ad
+          <lb ed="#B"/> <choice><orig>methaphysicum</orig><reg>metaphysicum</reg></choice><pc type="punctus"/> sed non est aliqua forma ita abstracta qua non pertineat ad
+          <pb ed="#B" n="148-v"/><cb ed="#B" n="a"/>
+          <lb ed="#B"/> <choice><orig>consideracionem</orig><reg>considerationem</reg></choice><pc type="punctus-medius"/> quia est circa causas altissimas<pc type="punctus-medius"/> unde quanto <choice><orig>consideracio</orig><reg>consideratio</reg></choice> est
+          <lb ed="#B"/> magis abstractorum tanto magis est metaphysica et hoc est intelligendum
+          <lb ed="#B"/> est de <choice><orig>consideracione</orig><reg>consideratione</reg></choice> per artem humanam inventa<pc type="horizontal-stroke"/> si autem sit aliqua
+          <lb ed="#B"/> <choice><orig>consideracio</orig><reg>consideratio</reg></choice> per <choice><orig>aspiracionem</orig><reg>aspirationem</reg></choice> <choice><orig>adquisita</orig><reg>acquisita</reg></choice> excedit <choice><orig>consideracionem</orig><reg>considerationem</reg></choice>
+          <choice><orig>me<lb ed="#B"/>thaphysici</orig><reg>me<lb ed="#B"/>taphysici</reg></choice><pc type="punctus-medius"/> sic ergo intelligenda sunt <choice><orig>que</orig><reg>quae</reg></choice> dicta sunt<pc type="punctus-medius"/> quod cum tres sint
+          <lb ed="#B"/> partes <choice><orig>philosophie</orig><reg>philosophiae</reg></choice><pc type="punctus-medius"/> essentiales scilicet naturalis<pc type="punctus-medius"/> mathematica<pc type="punctus-medius"/> et divina<pc type="punctus-medius"/> inter
+          <choice><orig>sci<lb ed="#B"/>encias</orig><reg>sci<lb ed="#B"/>entias</reg></choice> per artem humanam inventas<pc type="punctus-medius"/> <choice><orig>methaphsica</orig><reg>metaphysica</reg></choice> non recognoscit
+          <lb ed="#B"/> a materia scientiam superiorem<pc type="horizontal-stroke"/> <choice><orig>phisica</orig><reg>physica</reg></choice> etiam inter partes <choice><orig>phisice</orig><reg>physicae</reg></choice> essentiales
+          <lb ed="#B"/> quem ad modum abstractionis non recognoscit a materia scientiam inferiorem
+          <lb ed="#B"/> sed superiorem recognoscentem recognoscit mathematica recognoscit et
+          <lb ed="#B"/> superiorem et inferiorem quia aliqua est <choice><orig>que</orig><reg>quae</reg></choice> magis abstrahit et aliqua <choice><orig>que</orig><reg>quae</reg></choice>
+          <lb ed="#B"/> magis concrevit<pc type="horizontal-stroke"/> unde ut dictum est <choice><orig>consideracio</orig><reg>consideratio</reg></choice> <choice><orig>phisica</orig><reg>physica</reg></choice> incipit a
+          <lb ed="#B"/> formis infimis et terminatur ad animam<pc type="punctus-medius"/>
+          Ex hoc patet quod liber de
+          <lb ed="#B"/> anima tenet sextum gradum inter libros naturales quia primum gradum
+          <lb ed="#B"/> tenet liber <choice><orig>phisicorum</orig><reg>physicorum</reg></choice> qui est de naturali audito<pc type="horizontal-stroke"/> secundum tenet liber de
+          <lb ed="#B"/> <choice><orig>celo</orig><reg>caelo</reg></choice> et mundo<pc type="horizontal-stroke"/> tertium gradum tenet liber de generatione<pc type="horizontal-stroke"/> quartum gradum
+          <lb ed="#B"/> tenet liber <choice><orig>metheorum</orig><reg>meteorum</reg></choice><pc type="horizontal-stroke"/> quintum gradum tenet liber de <unclear>mineris/mineralibus</unclear><pc type="horizontal-stroke"/> sextum
+          <lb ed="#B"/> gradum tenet liber de anima qui prior est dignitate<pc type="horizontal-stroke"/> sextus tamen
+          <lb ed="#B"/> ordine <choice><orig>doctrine</orig><reg>doctrinae</reg></choice><pc type="horizontal-stroke"/> unde philosophus in prohemio huius primi dicit quod <choice><orig>ystoria</orig><reg>historia</reg></choice>
+          <lb ed="#B"/> de anima primo est ponenda scilicet dignitate<pc type="horizontal-stroke"/> unde supposita communi
+          <lb ed="#B"/> <choice><orig>distinccione</orig><reg>distinctione</reg></choice> librorum naturalium alibi ponita <choice><orig>querantur</orig><reg>quaerantur</reg></choice> primo <choice><orig>quedam</orig><reg>quaedam</reg></choice>
+          <lb ed="#B"/> communia circa librum de anima et secundum magis in speciali<pc type="pilcrow"/>
+        </p>
+     </div>
+    </body>
+  </text>
+</TEI>

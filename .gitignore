@@ -1,6 +1,5 @@
 # Project specific material
 /data/
-*.html
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
