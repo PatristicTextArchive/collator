@@ -58,4 +58,15 @@
   </xsl:template>
   <xsl:template match="ref"><xsl:apply-templates/></xsl:template>
 
+  <xsl:template match="app">
+    <xsl:choose>
+      <xsl:when test="lem">
+        <xsl:apply-templates select="lem"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="rdg[1]"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
 </xsl:stylesheet>
