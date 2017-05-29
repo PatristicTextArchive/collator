@@ -1,6 +1,9 @@
 # Project specific material
 /data/
 
+# PyCharm cruft
+.idea/
+
 ### Emacs ###
 # -*- mode: gitignore; -*-
 *~
