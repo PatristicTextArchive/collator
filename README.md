@@ -18,7 +18,7 @@ document are not central to it.
 
 ## Requirements
 
-- Python 3.6 (you might as well get that updated anyway)
+- Python 3.6
 - Saxon HE
 - CollateX (binary included in the repository)
 
@@ -33,12 +33,13 @@ You can also [download
 it](https://sourceforge.net/projects/saxon/files/Saxon-HE/) and install it on
 your own.
 
-### Python packages
+### Run without any installation
 
 The only external dependency right now is the wonderful [docopt
-module](http://docopt.org/). 
+module](http://docopt.org/). I want to shred this dependency, but for now, the
+script needs it.
 
-You should probably create a [virtual
+Before you install anything, you should probably create a [virtual
 environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) for the
 project. To do that, run:
 
@@ -51,6 +52,36 @@ After activating the venv (`workon` or `source`), install dependencies:
 ```bash
 $ pip install -r requirements.txt
 ```
+
+### Install development version for testing
+
+If you want to try it out, and maybe fiddle with the script yourself (PR's are
+very welcome!), I would recommend creating a virtual environment and install the
+script in development mode:
+
+```bash
+$ pip3 install -e .
+```
+
+Notice the dot! Now you can run `$ collator.py` from anywhere. 
+
+By using the `-e` the script is install with a symlink to the file so that
+changes are immediately available in the command line script without updating
+the install.
+
+Once you leave the virtual environment, the script is no longer available. When
+you delete the environment, it's gone.
+
+### Install permanently
+
+If you just want to be able to use the script at any time, from the directory of
+the script, run:
+
+```bash
+pip3 install .
+```
+
+Now `collator.py` should be globally available.
 
 ## Usage
 

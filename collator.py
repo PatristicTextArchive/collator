@@ -23,6 +23,8 @@ import os
 import subprocess
 import tempfile
 
+__version__ = '0.1.0'
+
 BASE_DIR = os.path.dirname(__file__)
 
 
