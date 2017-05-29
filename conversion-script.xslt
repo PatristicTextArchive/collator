@@ -18,7 +18,9 @@
 
   <xsl:template match="div//head"><xsl:apply-templates/></xsl:template>
   <xsl:template match="p">
+    <xsl:text>&#xa;</xsl:text>
     <xsl:apply-templates />
+    <xsl:text>&#xa;</xsl:text>
   </xsl:template>
 
   <!-- Normalization template -->
