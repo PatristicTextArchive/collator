@@ -218,7 +218,7 @@ def wrap_table_html(table_array):
         td.red { background-color: #ffecec; }
         td.yellow { background-color: #FFFFEE; }
         td.pink { background-color: #FEEEFF; }
-        td.empty { background: 1px dotted; }
+        td.empty { border: 1px dotted; }
         </style>
     </head>
     <body>
@@ -249,7 +249,7 @@ def write_html_to_file(html_input, output_file):
     """
     with open(output_file, 'w') as f:
         f.write(html_input)
-        logging.info(f'f.name created.')
+        logging.info(f'{f.name} created.')
     return f
 
 
