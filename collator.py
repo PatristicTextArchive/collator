@@ -19,8 +19,11 @@ from docopt import docopt
 import json
 import logging
 import re
+import os
 import subprocess
 import tempfile
+
+BASE_DIR = os.path.dirname(__file__)
 
 
 def convert_xml_to_plaintext(xml_files):
@@ -54,10 +57,11 @@ def convert_xml_to_plaintext(xml_files):
     """
     output_dict = {'witnesses': []}
     for file in xml_files:
+        stylesheet = os.path.join(BASE_DIR, 'conversion-script.xslt')
         logging.debug(f'Start conversion of {file}')
-        buffer = subprocess.run(['saxon', f'-s:{file}', f'-xsl:./conversion-script.xslt'],
+        buffer = subprocess.run(['saxon', f'-s:{file}', f'-xsl:{stylesheet}'],
                                 stdout=subprocess.PIPE).stdout
-        witness_dictionary = dict(id=re.search('\{witness:([^}]+)\}', str(buffer)).group(1),
+        witness_dictionary = dict(id=re.search(r'\{witness:([^}]+)\}', str(buffer)).group(1),
                                   content=re.search('\{content:(.*)}', str(buffer)).group(1))
         output_dict['witnesses'].append(witness_dictionary)
     return output_dict
@@ -83,7 +87,8 @@ def run_collatex(input_file):
     Return:
     Collatex output as dictionary.
     """
-    cmd = subprocess.Popen(['java', '-jar', 'collatex-tools-1.7.1.jar',
+    collatex_binary = os.path.join(BASE_DIR, 'collatex-tools-1.7.1.jar')
+    cmd = subprocess.Popen(['java', '-jar', collatex_binary,
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
