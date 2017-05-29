@@ -19,19 +19,17 @@ document are not central to it.
 ## Requirements
 
 - Python 3.6
-- Saxon HE
-- CollateX (binary included in the repository)
+- Java Runtime Environment
 
-### Saxon HE
+### Vendored binaries
 
-On macOS, with [homebrew](https://brew.sh/):
-``` bash
-$ brew install saxon
-```
+The script uses [saxon](http://saxon.sourceforge.net/) for XML processing
+and [CollateX](https://collatex.net/) for collation. The binaries of those are
+included in the `vendor` directory, so no installation is required for that.
 
-You can also [download
-it](https://sourceforge.net/projects/saxon/files/Saxon-HE/) and install it on
-your own.
+But you do need to have a
+functional
+[Java Runtime Environment](http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html).
 
 ### Run without any installation
 
@@ -52,6 +50,8 @@ After activating the venv (`workon` or `source`), install dependencies:
 ```bash
 $ pip install -r requirements.txt
 ```
+
+Now you can run the script from its directory with `./collator.py`.
 
 ### Install development version for testing
 

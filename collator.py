@@ -60,8 +60,9 @@ def convert_xml_to_plaintext(xml_files):
     output_dict = {'witnesses': []}
     for file in xml_files:
         stylesheet = os.path.join(BASE_DIR, 'conversion-script.xslt')
+        saxon = os.path.join(BASE_DIR, 'vendor/saxon9he.jar')
         logging.debug(f'Start conversion of {file}')
-        buffer = subprocess.run(['saxon', f'-s:{file}', f'-xsl:{stylesheet}'],
+        buffer = subprocess.run(['java', '-jar', saxon, f'-s:{file}', f'-xsl:{stylesheet}'],
                                 stdout=subprocess.PIPE).stdout
         witness_dictionary = dict(id=re.search(r'\{witness:([^}]+)\}', str(buffer)).group(1),
                                   content=re.search('\{content:(.*)}', str(buffer)).group(1))
@@ -89,7 +90,7 @@ def run_collatex(input_file):
     Return:
     Collatex output as dictionary.
     """
-    collatex_binary = os.path.join(BASE_DIR, 'collatex-tools-1.7.1.jar')
+    collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.7.1.jar')
     cmd = subprocess.Popen(['java', '-jar', collatex_binary,
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
