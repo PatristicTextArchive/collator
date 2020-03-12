@@ -93,7 +93,7 @@ def run_collatex(input_file):
     Collatex output as dictionary.
     """
     collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.7.1.jar')
-    cmd = subprocess.Popen(['java', '-jar', collatex_binary, 
+    cmd = subprocess.Popen(['java', '-jar', collatex_binary,
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
@@ -149,7 +149,7 @@ def collation_table_html(table):
                 sorted_witnesses.append(wit_eqs)
 
         # Assign colour classes
-        colours = ['green', 'blue', 'red', 'yellow', 'pink']
+        colours = ['Melon', 'Very_Pale_Orange', 'Dirty_White', 'Magic_Mint', 'Light_Salmon_Pink', 'Crayola',  'Vodka', 'Pale_Blue', 'Granny_Smith_Apple', 'Calamansi', 'Persian_Pink']
         colour_classes = {}
         for i, item in enumerate(sorted_witnesses):
             # If we have differences, mark with colours
@@ -218,11 +218,17 @@ def wrap_table_html(table_array):
         table.alignment {
             border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;
         }
-        td.green { background-color: #eaffea; }
-        td.blue { background-color: #ECEFFF; }
-        td.red { background-color: #ffecec; }
-        td.yellow { background-color: #FFFFEE; }
-        td.pink { background-color: #FEEEFF; }
+        td.Melon { background-color: #FFB7B2; }
+        td.Very_Pale_Orange { background-color: #FFDAC1; }
+        td.Dirty_White { background-color: #E2F0CB; }
+        td.Magic { background-color: #B5EAD7; }
+        td.Crayola { background-color: #C7CEEA; }
+        td.Light_Salmon_Pink { background-color: #FF9AA2; }
+        td.Vodka { background-color: #B2B7F6; }
+        td.Pale_Blue { background-color: #B2F6F0; }
+        td.Granny_Smith_Apple { background-color: #B3EE9A; }
+        td.Calamansi { background-color: #F6F39F; }
+        td.Persian_Pink { background-color: #F186BF; }
         td.empty { border: 1px dotted; }
         </style>
     </head>
