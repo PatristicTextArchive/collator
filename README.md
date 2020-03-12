@@ -9,10 +9,11 @@ I could cut that dependency). It then reads those witnesses into a JSON
 temporary file that it feeds to CollateX which returns a nested list that it
 processes into a HTML representation.
 
-This is developed to handle [LombardPress
-Schema](http://lombardpress.org/schema/docs/) compliant material, but it might
+This is developed to handle [Patristic Text Archive
+Schema](https://github.com/PatristicTextArchive/Schema) compliant material, but it might
 handle many other TEI documents well for now, as the encoding conventions of the
 document are not central to it.
+
 
 # Installation
 
@@ -42,7 +43,7 @@ environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/) for the
 project. To do that, run:
 
 ```bash
-$ mkvirtualenv -p python3 <name>
+$ virtualenv -p python3 <name>
 ```
 Where `<name>` is the name you want to give the venv.
 
@@ -85,19 +86,13 @@ Now `collator.py` should be globally available.
 
 ## Usage
 
-To see some quick results, run:
-
-``` bash
-$ ./collator.py examples/bal311_da-49-l1prooemium.xml examples/oriel33_da-49-l1prooemium.xml
-```
-It will result in the html that is already in the `examples`-directory. 
 
 The usage statement:
 ``` 
 Usage: collator.py [options] <file> <file>...
 
 A script for simplifying collation of several text witnesses encoded according
-to the Lombard Press Schema.
+to the PTA Schema.
 
 Arguments:
   <file> <file>...        Two or more files that are to be collated.
@@ -114,13 +109,11 @@ processing. The following elements will be preserved in the plain text for later
 analysis:
 - unclear
 - pb
-- supplied
-- secl
 - del
 - add
-
-When a word is normalized with
-`<choice><orig>sicud</orig><reg>sicut</reg></choice>`, the regularized form is used.
+- gap
+- hi
+- expan (= Nomina sacra in their expanded form)
 
 # Warning
 

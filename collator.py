@@ -3,7 +3,9 @@
 """Usage: collator.py [options] <file> <file>...
 
 A script for simplifying collation of several text witnesses encoded according
-to the Lombard Press Schema.
+to the PTA Schema.
+
+Original script by Michael Stenskjær Christensen (https://github.com/stenskjaer/collator)
 
 Arguments:
   <file> <file>...        Two or more files that are to be collated.
@@ -65,7 +67,7 @@ def convert_xml_to_plaintext(xml_files):
         buffer = subprocess.run(['java', '-jar', saxon, f'-s:{file}', f'-xsl:{stylesheet}'],
                                 stdout=subprocess.PIPE).stdout
         witness_dictionary = dict(id=re.search(r'\{witness:([^}]+)\}', str(buffer)).group(1),
-                                  content=re.search('\{content:(.*)}', str(buffer)).group(1))
+                                  content=re.search(r'\{content:([\W\w\s]*)}', str(buffer.decode('utf-8'))).group(1))
         output_dict['witnesses'].append(witness_dictionary)
     return output_dict
 
@@ -77,7 +79,7 @@ def write_collation_file(input_dict):
     input_dict -- Dump the witness dictionary to a JSON file.
     """
     fp = tempfile.NamedTemporaryFile(mode='w')
-    fp.write(json.dumps(input_dict))
+    fp.write(json.dumps(input_dict, ensure_ascii=False))
     return fp
 
 
@@ -91,11 +93,11 @@ def run_collatex(input_file):
     Collatex output as dictionary.
     """
     collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.7.1.jar')
-    cmd = subprocess.Popen(['java', '-jar', collatex_binary,
+    cmd = subprocess.Popen(['java', '-jar', collatex_binary, 
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
-        raise Exception(err)
+        pass#raise Exception(err)
     return json.loads(out)
 
 
@@ -174,7 +176,7 @@ def collation_table_html(table):
 
     for i, width in enumerate(col_widths):
         width_sum += width
-        if width_sum > 100:
+        if width_sum > 70:
             shift_row.append(i)
             width_sum = 0
     shift_row.append(len(col_widths))  # Let the shifted array include the final material too.
@@ -210,7 +212,7 @@ def wrap_table_html(table_array):
     <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>HTML collation</title>
+        <title>Collation of witnesses</title>
         <style>
         td { border: 1px solid #d3d3d3; white-space: nowrap; padding: 0.25em; }
         table.alignment {
