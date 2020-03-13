@@ -3,7 +3,7 @@
 
   <xsl:variable name="witness-id"><xsl:value-of select="/TEI/teiHeader/fileDesc/sourceDesc/msDesc/msIdentifier/@xml:id"/></xsl:variable>
 
-  <xsl:output method="text" indent="no"/>
+  <xsl:output method="text" indent="yes"/>
   <xsl:strip-space elements="div"/>
   <xsl:template match="text()">
     <!--  <xsl:value-of select="replace(., '\s+', ' ')"/>-->
@@ -36,42 +36,47 @@
 
   <xsl:template match="hi">
     <xsl:if test="@rend='initial'">
-    {initial:
+    <xsl:text> {initial=</xsl:text>
+      <xsl:apply-templates/>
+      <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:if test="@rend='ekthesis'">
-      {ekthesis:
+      <xsl:text> {ekthesis=</xsl:text>
+      <xsl:apply-templates/>
+      <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:if test="@rend='overline'">
-    {overline:
-  </xsl:if>
-  <xsl:apply-templates/>}
+      <xsl:text> {overline=</xsl:text>
+      <xsl:apply-templates/>
+      <xsl:text>} </xsl:text>
+    </xsl:if>
   </xsl:template>
 
 
   <xsl:template match="pb">
     <xsl:choose>
       <xsl:when test="@break='no'">
-        {f:<xsl:value-of select="./@n"/>}</xsl:when>
-      <xsl:otherwise><xsl:text> </xsl:text>{f:<xsl:value-of select="./@n"/>}<xsl:text> </xsl:text></xsl:otherwise>
+        <xsl:text>{f=</xsl:text><xsl:value-of select="./@n"/>}</xsl:when>
+      <xsl:otherwise><xsl:text> </xsl:text>{f=<xsl:value-of select="./@n"/>}<xsl:text> </xsl:text></xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
   <xsl:template match="del">
-    <xsl:text> </xsl:text>
-    {del:<xsl:apply-templates/><xsl:text>, </xsl:text><xsl:value-of select="@rend"/>}
-    <xsl:text> </xsl:text>
+    <xsl:text> {del=</xsl:text>
+    <xsl:apply-templates/><xsl:text> – </xsl:text><xsl:value-of select="@rend"/>
+    <xsl:text>} </xsl:text>
   </xsl:template>
 
   <xsl:template match="add">
-    <xsl:text> </xsl:text>
-    {add:<xsl:apply-templates/><xsl:text>, </xsl:text><xsl:value-of select="@place"/>}
-    <xsl:text> </xsl:text>
+    <xsl:text> {add=</xsl:text>
+    <xsl:apply-templates/><xsl:text> – </xsl:text><xsl:value-of select="@place"/>
+    <xsl:text>} </xsl:text>
   </xsl:template>
 
   <xsl:template match="tei:gap">
-    <xsl:text> </xsl:text>
-    {gap:<xsl:value-of select="@quantity"/><xsl:text> </xsl:text><xsl:value-of select="@unit"/>}
-    <xsl:text> </xsl:text>
+    <xsl:text> {gap=</xsl:text>
+    <xsl:value-of select="@quantity"/><xsl:text> </xsl:text><xsl:value-of select="@unit"/>
+    <xsl:text>} </xsl:text>
   </xsl:template>
 
   <xsl:template match="tei:choice">
