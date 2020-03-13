@@ -11,7 +11,7 @@ Arguments:
   <file> <file>...        Two or more files that are to be collated.
 
 Options:
-  -o, --output <file>     Location of the output file. [default: ./output.html].
+  -o, --output <file>     Location of the output files (json and html). [default: ./output].
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: info].
   -v, --version           Show version and exit.
   -h, --help              Show this help message and exit.
@@ -78,8 +78,13 @@ def write_collation_file(input_dict):
     Keyword Arguments:
     input_dict -- Dump the witness dictionary to a JSON file.
     """
-    fp = tempfile.NamedTemporaryFile(mode='w')
-    fp.write(json.dumps(input_dict, ensure_ascii=False))
+    if args['--output']:
+        output_file = args['--output']
+    else:
+        output_file = 'output'
+    with open(output_file+".json", "w", encoding='utf8') as fp:
+        fp.write(json.dumps(input_dict, ensure_ascii=False))
+        logging.info(f'Write JSON-Input file to {fp.name}')
     return fp
 
 
@@ -288,7 +293,7 @@ if __name__ == "__main__":
     if args['--output']:
         output_file = args['--output']
     else:
-        output_file = 'output.html'
-    html_file = write_html_to_file(output_html, output_file)
+        output_file = 'output'
+    html_file = write_html_to_file(output_html, output_file+".html")
 
     logging.info('Results returned sucessfully.')
