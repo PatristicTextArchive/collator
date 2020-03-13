@@ -12,6 +12,8 @@ Arguments:
 
 Options:
   -o, --output <file>     Location of the output files (json and html). [default: ./output].
+  -i, --interpunction     Do collation with interpunction [default: without interpunction].
+  -d, --diacritics        Do collation without diacritics [default: with diacritics].
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: info].
   -v, --version           Show version and exit.
   -h, --help              Show this help message and exit.
@@ -24,11 +26,25 @@ import re
 import os
 import subprocess
 import tempfile
+import unicodedata
 
 __version__ = '0.1.0'
 
 BASE_DIR = os.path.dirname(__file__)
 
+def diacritics(inputText):
+    if args['--diacritics']:
+        text = unicodedata.normalize("NFKD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"})
+    else:
+        text = inputText
+    return text
+
+def interpunction(inputText):
+    if args['--interpunction']:
+        text = inputText
+    else:
+        text = re.sub(r'[.,:·;]+', r'', inputText)
+    return text
 
 def convert_xml_to_plaintext(xml_files):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
@@ -66,8 +82,11 @@ def convert_xml_to_plaintext(xml_files):
         logging.debug(f'Start conversion of {file}')
         buffer = subprocess.run(['java', '-jar', saxon, f'-s:{file}', f'-xsl:{stylesheet}'],
                                 stdout=subprocess.PIPE).stdout
-        witness_dictionary = dict(id=re.search(r'\{witness:([^}]+)\}', str(buffer)).group(1),
-                                  content=re.search(r'\{content:([\W\w\s]*)}', str(buffer.decode('utf-8'))).group(1))
+        siglum = re.search(r'\{witness:([^}]+)\}', str(buffer)).group(1)
+        text = re.search(r'\{content:([\W\w\s]*)}', str(buffer.decode('utf-8'))).group(1)
+        text = interpunction(text)
+        text = diacritics(text)
+        witness_dictionary = dict(id=siglum,content=text)
         output_dict['witnesses'].append(witness_dictionary)
     return output_dict
 
@@ -98,7 +117,7 @@ def run_collatex(input_file):
     Collatex output as dictionary.
     """
     collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.7.1.jar')
-    cmd = subprocess.Popen(['java', '-jar', collatex_binary,
+    cmd = subprocess.Popen(['java', '-jar', collatex_binary, '-t',
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
@@ -181,7 +200,7 @@ def collation_table_html(table):
 
     for i, width in enumerate(col_widths):
         width_sum += width
-        if width_sum > 70:
+        if width_sum > 80:
             shift_row.append(i)
             width_sum = 0
     shift_row.append(len(col_widths))  # Let the shifted array include the final material too.
