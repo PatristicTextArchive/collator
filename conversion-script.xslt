@@ -92,6 +92,9 @@
   <xsl:if test="@type='diple'">
     <xsl:text>› </xsl:text>
   </xsl:if>
+  <xsl:if test="@type='paragraphos'">
+    <xsl:text>– </xsl:text>
+  </xsl:if>
 </xsl:template>
 
 <xsl:template match="note">

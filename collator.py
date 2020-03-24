@@ -43,7 +43,7 @@ def interpunction(inputText):
     if args['--interpunction']:
         text = inputText
     else:
-        text = re.sub(r'[.,:·;]+', r'', inputText)
+        text = re.sub(r'[.,:·;›»]+', r'', inputText)
     return text
 
 def convert_xml_to_plaintext(xml_files):
