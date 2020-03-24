@@ -64,7 +64,7 @@ script in development mode:
 $ pip3 install -e .
 ```
 
-Notice the dot! Now you can run `$ collator.py` from anywhere. 
+Notice the dot! Now you can run `$ collator.py` from anywhere.
 
 By using the `-e` the script is install with a symlink to the file so that
 changes are immediately available in the command line script without updating
@@ -88,7 +88,7 @@ Now `collator.py` should be globally available.
 
 
 The usage statement:
-``` 
+```
 Usage: collator.py [options] <file> <file>...
 
 A script for simplifying collation of several text witnesses encoded according
@@ -99,6 +99,8 @@ Arguments:
 
 Options:
   -o, --output <file>     Location of the output file. [default: ./output.html].
+  -i, --interpunction     Do collation with interpunction [default: without interpunction].
+  -d, --diacritics        Do collation without diacritics [default: with diacritics].
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: info].
   -v, --version           Show version and exit.
   -h, --help              Show this help message and exit.
@@ -114,9 +116,3 @@ analysis:
 - gap
 - hi
 - expan (= Nomina sacra in their expanded form)
-
-# Warning
-
-The script is volatile. Anything may be subject to change, and I provide no
-warranties for the safety of your texts, computer equipment or soul when using
-the script.
