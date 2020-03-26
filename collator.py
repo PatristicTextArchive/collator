@@ -173,7 +173,7 @@ def collation_table_html(table):
                 sorted_witnesses.append(wit_eqs)
 
         # Assign colour classes
-        colours = ['Melon', 'Very_Pale_Orange', 'Dirty_White', 'Magic_Mint', 'Light_Salmon_Pink', 'Crayola',  'Vodka', 'Pale_Blue', 'Granny_Smith_Apple', 'Calamansi', 'Persian_Pink']
+        colours = ['Melon', 'Pastel_Yellow', 'Very_Pale_Orange', 'Dirty_White', 'Magic_Mint', 'Light_Salmon_Pink', 'Crayola',  'Vodka', 'Pale_Blue', 'Granny_Smith_Apple', 'Calamansi', 'Persian_Pink', 'Ceil', 'Orchid', 'Tea_Green', 'Pearl_Aqua', 'Aero', 'Pastel_Purple', 'Light_Silver', 'Pastel_Blue', 'Black_Shadows', 'Shadow_Blue', 'Laurel_Green']
         colour_classes = {}
         for i, item in enumerate(sorted_witnesses):
             # If we have differences, mark with colours
@@ -243,6 +243,7 @@ def wrap_table_html(table_array):
             border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;
         }
         td.Melon { background-color: #FFB7B2; }
+        td.Pastel_Yellow {background-color: #FDFD95}
         td.Very_Pale_Orange { background-color: #FFDAC1; }
         td.Dirty_White { background-color: #E2F0CB; }
         td.Magic { background-color: #B5EAD7; }
@@ -252,7 +253,17 @@ def wrap_table_html(table_array):
         td.Pale_Blue { background-color: #B2F6F0; }
         td.Granny_Smith_Apple { background-color: #B3EE9A; }
         td.Calamansi { background-color: #F6F39F; }
-        td.Persian_Pink { background-color: #F186BF; }
+        td.Ceil { background-color: #998AD3; }
+        td.Orchid { background-color: #E494D3; }
+        td.Tea_Green { background-color: #CDF1AF; }
+        td.Pearl_Aqua { background-color: #87DCC0; }
+        td.Aero { background-color: #88BBE4; }
+        td.Pastel_Purple { background-color: #B29DB6; }
+        td.Light_Silver { background-color: #D6D6D6; }
+        td.Pastel_Blue { background-color: #ABC3CE; }
+        td.Black_Shadows { background-color: #C5AEB4; }
+        td.Shadow_Blue { background-color: #7B8FA5; }
+        td.Laurel_Green { background-color: #99B49F; }
         td.empty { border: 1px dotted; }
         </style>
     </head>
