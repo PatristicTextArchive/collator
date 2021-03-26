@@ -15,7 +15,7 @@
     {content:<xsl:apply-templates select="//body"/>}
   </xsl:template>
 
-  <xsl:template match="div//head"><xsl:apply-templates/></xsl:template>
+  <xsl:template match="div//head"><xsl:text> </xsl:text><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
 
   <xsl:template match="p">
     <xsl:text>&#xa;</xsl:text>
@@ -23,7 +23,7 @@
     <xsl:text>&#xa;</xsl:text>
   </xsl:template>
 
-  <xsl:template match="tei:lb">
+  <xsl:template match="lb">
     <xsl:choose>
       <xsl:when test="@break='no'">
         <xsl:text></xsl:text></xsl:when>
@@ -32,7 +32,7 @@
   </xsl:template>
 
 
-  <xsl:template match="unclear">{unclear:<xsl:apply-templates/>}</xsl:template>
+  <xsl:template match="unclear"> {unclear:<xsl:apply-templates/>}</xsl:template>
 
   <xsl:template match="hi">
     <xsl:if test="@rend='initial'">
@@ -73,20 +73,20 @@
     <xsl:text>} </xsl:text>
   </xsl:template>
 
-  <xsl:template match="tei:gap">
+  <xsl:template match="gap">
     <xsl:text> {gap=</xsl:text>
     <xsl:value-of select="@quantity"/><xsl:text> </xsl:text><xsl:value-of select="@unit"/>
     <xsl:text>} </xsl:text>
   </xsl:template>
 
-  <xsl:template match="tei:choice">
+  <xsl:template match="choice">
 		<xsl:text> (</xsl:text>
 		<xsl:value-of select="tei:expan"/>
 		<xsl:text>) </xsl:text>
 	</xsl:template>
 
 <xsl:template match="g">
-  <xsl:if test="@type='doubled_diple'">
+<!--   <xsl:if test="@type='doubled_diple'">
     <xsl:text>» </xsl:text>
   </xsl:if>
   <xsl:if test="@type='diple'">
@@ -94,7 +94,11 @@
   </xsl:if>
   <xsl:if test="@type='paragraphos'">
     <xsl:text>– </xsl:text>
-  </xsl:if>
+  </xsl:if> -->
+</xsl:template>
+
+<xsl:template match="num">
+  <xsl:text> </xsl:text><xsl:value-of select="."/><xsl:text> </xsl:text>
 </xsl:template>
 
 <xsl:template match="note">
