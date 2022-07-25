@@ -20,7 +20,7 @@ document are not central to it.
 ## Requirements
 
 - Python 3.6
-- Java Runtime Environment
+- Java Runtime Environment (< 15)
 
 ### Vendored binaries
 
@@ -29,8 +29,9 @@ and [CollateX](https://collatex.net/) for collation. The binaries of those are
 included in the `vendor` directory, so no installation is required for that.
 
 But you do need to have a
-functional *Java Runtime Environment* installed.
-
+functional *Java Runtime Environment* installed. CollateX only works with Java versions smaller
+ than v. 15.
+ 
 ### Run without any installation
 
 The only external dependency right now is the wonderful [docopt

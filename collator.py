@@ -36,7 +36,7 @@ __version__ = '0.2.0'
 BASE_DIR = os.path.dirname(__file__)
 
 def processToken(inputText):
-    return {"t": inputText, "n": unicodedata.normalize("NFKD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower()}
+    return {"t": inputText, "n": unicodedata.normalize("NFD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower()}
 
 def diacritics(inputText):
     return [processToken(token) for token in re.findall(r'\S+\s*', inputText)]
@@ -81,7 +81,7 @@ def write_collation_file(input_dict):
     else:
         output_file = 'output'
     with open(output_file+".json", "w", encoding='utf8') as fp:
-        fp.write(json.dumps(input_dict, ensure_ascii=False))
+        fp.write(json.dumps(input_dict, indent=4, ensure_ascii=False))
         logging.info(f'Write JSON-Input file to {fp.name}')
     return fp
 

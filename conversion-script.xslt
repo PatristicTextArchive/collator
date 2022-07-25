@@ -13,6 +13,7 @@
   <xsl:template match="/">
     {witness:<xsl:value-of select="$witness-id"/>}
     {content:<xsl:apply-templates select="//body"/>}
+    <!-- {content:<xsl:apply-templates select="//body//div[@n='6']"/>} -->
   </xsl:template>
 
   <xsl:template match="div//head"><xsl:text> </xsl:text><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
@@ -32,7 +33,7 @@
   </xsl:template>
 
 
-  <xsl:template match="unclear"> {unclear:<xsl:apply-templates/>}</xsl:template>
+  <xsl:template match="unclear"> {unclear–<xsl:apply-templates/>}</xsl:template>
 
   <xsl:template match="hi">
     <xsl:if test="@rend='initial'">
@@ -48,7 +49,7 @@
     <xsl:if test="@rend='overline'">
       <xsl:text> {overline=</xsl:text>
       <xsl:apply-templates/>
-      <xsl:text>} </xsl:text>
+      <xsl:text>}</xsl:text>
     </xsl:if>
   </xsl:template>
 
@@ -63,19 +64,19 @@
 
   <xsl:template match="del">
     <xsl:text> {del=</xsl:text>
-    <xsl:apply-templates/><xsl:text> – </xsl:text><xsl:value-of select="@rend"/>
+    <xsl:apply-templates/><xsl:text>–</xsl:text><xsl:value-of select="@rend"/>
     <xsl:text>} </xsl:text>
   </xsl:template>
 
   <xsl:template match="add">
     <xsl:text> {add=</xsl:text>
-    <xsl:apply-templates/><xsl:text> – </xsl:text><xsl:value-of select="@place"/>
+    <xsl:apply-templates/><xsl:text>–</xsl:text><xsl:value-of select="@place"/>
     <xsl:text>} </xsl:text>
   </xsl:template>
 
   <xsl:template match="gap">
     <xsl:text> {gap=</xsl:text>
-    <xsl:value-of select="@quantity"/><xsl:text> </xsl:text><xsl:value-of select="@unit"/>
+    <xsl:value-of select="@quantity"/><xsl:text></xsl:text><xsl:value-of select="@unit"/>
     <xsl:text>} </xsl:text>
   </xsl:template>
 
