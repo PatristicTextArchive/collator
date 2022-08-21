@@ -5,10 +5,7 @@
 
   <xsl:output method="text" indent="yes"/>
   <xsl:strip-space elements="div"/>
-  <xsl:template match="text()">
-    <!--  <xsl:value-of select="replace(., '\s+', ' ')"/>-->
-      <xsl:value-of select="normalize-space(.)"/>
-  </xsl:template>
+
 
   <xsl:template match="/">
     {witness:<xsl:value-of select="$witness-id"/>}
@@ -33,21 +30,21 @@
   </xsl:template>
 
 
-  <xsl:template match="unclear"> {unclear–<xsl:apply-templates/>}</xsl:template>
+  <xsl:template match="unclear">{unclear–<xsl:apply-templates/>}</xsl:template>
 
   <xsl:template match="hi">
     <xsl:if test="@rend='initial'">
-    <xsl:text> {initial=</xsl:text>
+    <xsl:text>{initial=</xsl:text>
       <xsl:apply-templates/>
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:if test="@rend='ekthesis'">
-      <xsl:text> {ekthesis=</xsl:text>
+      <xsl:text>{ekthesis=</xsl:text>
       <xsl:apply-templates/>
       <xsl:text>}</xsl:text>
     </xsl:if>
     <xsl:if test="@rend='overline'">
-      <xsl:text> {overline=</xsl:text>
+      <xsl:text>{overline=</xsl:text>
       <xsl:apply-templates/>
       <xsl:text>}</xsl:text>
     </xsl:if>
@@ -63,27 +60,27 @@
   </xsl:template>
 
   <xsl:template match="del">
-    <xsl:text> {del=</xsl:text>
+    <xsl:text>{del=</xsl:text>
     <xsl:apply-templates/><xsl:text>–</xsl:text><xsl:value-of select="@rend"/>
-    <xsl:text>} </xsl:text>
+    <xsl:text>}</xsl:text>
   </xsl:template>
 
   <xsl:template match="add">
-    <xsl:text> {add=</xsl:text>
+    <xsl:text>{add=</xsl:text>
     <xsl:apply-templates/><xsl:text>–</xsl:text><xsl:value-of select="@place"/>
-    <xsl:text>} </xsl:text>
+    <xsl:text>}</xsl:text>
   </xsl:template>
 
   <xsl:template match="gap">
-    <xsl:text> {gap=</xsl:text>
+    <xsl:text>{gap=</xsl:text>
     <xsl:value-of select="@quantity"/><xsl:text></xsl:text><xsl:value-of select="@unit"/>
-    <xsl:text>} </xsl:text>
+    <xsl:text>}</xsl:text>
   </xsl:template>
 
   <xsl:template match="choice">
-		<xsl:text> (</xsl:text>
+		<xsl:text>(</xsl:text>
 		<xsl:value-of select="tei:expan"/>
-		<xsl:text>) </xsl:text>
+		<xsl:text>)</xsl:text>
 	</xsl:template>
 
 <xsl:template match="g">
@@ -99,10 +96,13 @@
 </xsl:template>
 
 <xsl:template match="num">
-  <xsl:text> </xsl:text><xsl:value-of select="."/><xsl:text> </xsl:text>
+  <xsl:text></xsl:text><xsl:value-of select="."/><xsl:text></xsl:text>
 </xsl:template>
 
 <xsl:template match="note">
+</xsl:template>
+
+<xsl:template match="stamp">
 </xsl:template>
 
 </xsl:stylesheet>

@@ -36,7 +36,7 @@ __version__ = '0.2.0'
 BASE_DIR = os.path.dirname(__file__)
 
 def processToken(inputText):
-    return {"t": inputText, "n": unicodedata.normalize("NFD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower()}
+    return {"t": inputText.strip(), "n": unicodedata.normalize("NFD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower().strip()}
 
 def diacritics(inputText):
     return [processToken(token) for token in re.findall(r'\S+\s*', inputText)]
