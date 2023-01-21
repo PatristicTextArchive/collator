@@ -23,6 +23,7 @@ Options:
 
 from docopt import docopt
 import json
+import csv
 import logging
 import re
 import os
@@ -114,6 +115,31 @@ def collation_json(table):
         fp.write(json.dumps(table, ensure_ascii=False))
         logging.info(f'Write JSON-Collation-file file to {fp.name}')
     return fp   
+
+def collation_table_csv_file(data, output_file):
+    """Process the collation table and return a CSV representation of it.
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """
+    logging.info(f'Process collation table to csv.')
+    manuscripts = data['witnesses'] # list of witnesses
+    collation = data['table'] # collation
+    towrite = []
+    for line in collation:
+        row = []
+        for i in range(len(line)):
+            w = "".join([d['t'] for d in line[i] if 't' in d])
+            row.append(w)
+        towrite.append(row)
+
+    with open(output_file, 'w', encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(manuscripts)
+        writer.writerows(towrite)
+        logging.info(f'{f.name} created.')
+    return f
+
 
 def collation_table_html(table):
     """Process the collation table and return a HTML representation of it.
@@ -494,5 +520,6 @@ if __name__ == "__main__":
         output_file = 'output'
     html_file = write_html_to_file(output_html, output_file+".html")
     tei_file = write_tei_to_file(tei_table, output_file+".xml")
+    csv_file = collation_table_csv_file(collation_table, output_file+".csv")
 
     logging.info('Results returned sucessfully.')

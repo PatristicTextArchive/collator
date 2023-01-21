@@ -7,7 +7,7 @@ It is basically a wrapper for the CollateX CLI. It converts the witnesses into
 plain text with a very small xslt-script (and therefore also uses saxon). It then normalizes (Unicode NFC), 
 tokenizes, and strips all diacritics from those witnesses and finally reads them into a CollateX compliant 
 JSON input file that it feeds to CollateX. The output of CollateX is then converted to a CollateX JSON 
-output file, to a HTML file, and to a TEI XML file.
+output file, to a CSV file, to a HTML file, and to a TEI XML file.
 
 This is developed to handle [Patristic Text Archive
 Schema](https://github.com/PatristicTextArchive/Schema) compliant material, mainly in Greek, but it might
