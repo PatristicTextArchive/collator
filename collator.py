@@ -3,18 +3,22 @@
 """Usage: collator.py [options] <file> <file>...
 
 A script for simplifying collation of several text witnesses encoded according
-to the PTA Schema.
+to the PTA Schema. 
+Outputs CollateX-Input-JSON, CollateX-Collation-JSON, collation as html, xml (TEI), csv.
 
-Original script by Michael Stenskjær Christensen (https://github.com/stenskjaer/collator)
+Original script by Michael Stenskjær Christensen (https://github.com/stenskjaer/collator). This was modified to a large extent.
 
 Arguments:
-  <file> <file>...        Two or more files that are to be collated.
+  <file> <file>...        Two or more TEI encoded transcription files that are to be collated.
 
 Options:
   -t, --title=<title>     Set title
   -e, --editor=<editor>   Set editor name
   -q, --editorID=<ID>     Set editor ID
-  -o, --output <file>     Location of the output files (input-json, collation-json and collation-html). [default: ./output].
+  -a, --algorithm <algo>  Set algorithm: dekker (standard), needleman-wunsch
+  -c, --comparator <comp> Set tokenComparator: 'equality','levenshtein','levenshteinNormalized','jaccard' (standard)
+  -d, --distance <value>  Set distance value between 0 and 1
+  -o, --output <file>     Location of the output files (input-json, collation-json and collation-html, collation-xml, collation-csv). [default: ./output].
   -i, --interpunction     Do collation without interpunction [default: with interpunction].
   -V, --verbosity <level> Set verbosity. Possibilities: silent, info, debug [default: info].
   -v, --version           Show version and exit.
@@ -28,8 +32,8 @@ import logging
 import re
 import os
 import subprocess
-import tempfile
 import unicodedata
+from datetime import datetime
 from xml.dom.minidom import Document
 
 __version__ = '0.2.0'
@@ -51,9 +55,25 @@ def convert_xml_to_plaintext(xml_files):
 
     Keyword Arguments: xml_files -- list of files to be converted
     """
-    #tc = {"type": "levenshtein","distance": 1}
-    #output_dict = {'witnesses': [],'tokenComparator': tc}
-    output_dict = {'witnesses': []}
+    output_dict = {}
+    if args['--algorithm']:
+        output_dict['algorithm'] = args['--algorithm']
+    else:
+        output_dict['algorithm'] = 'dekker'
+    tc = {}
+    if args['--comparator']:
+        tc['type'] = args['--comparator']
+    else:
+        tc['type'] = 'jaccard'
+    if args['--distance']:
+        tc['distance'] = args['--distance']
+    else:
+        if args['--comparator'] == 'equality':
+            pass
+        else:
+            tc['distance'] = 0.7
+    output_dict['tokenComparator'] = tc
+    output_dict['witnesses'] = []
     for file in xml_files:
         stylesheet = os.path.join(BASE_DIR, 'conversion-script.xslt')
         saxon = os.path.join(BASE_DIR, 'vendor/saxon9he.jar')
@@ -97,9 +117,9 @@ def run_collatex(input_file):
     Collatex output as dictionary.
     """
     logging.info(f'Running collatex. This may take some time...')
-    collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.7.1.jar')
+    collatex_binary = os.path.join(BASE_DIR, 'vendor/collatex-tools-1.8-SNAPSHOT-TSAligner.jar')
     cmd = subprocess.Popen(['java', '-jar', collatex_binary, '-t', 
-                            input_file.name, '-a', 'needleman-wunsch'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
         pass#raise Exception(err)
@@ -115,6 +135,25 @@ def collation_json(table):
         fp.write(json.dumps(table, ensure_ascii=False))
         logging.info(f'Write JSON-Collation-file file to {fp.name}')
     return fp   
+
+def get_collation_metadata(data):
+    """Process the collation table and extract metadata.
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """
+    logging.info(f'Extract metadata as dict from collation table.') 
+    metadata = {}
+    metadata['manuscripts'] = ", ".join(data['witnesses']) # list of witnesses
+    metadata['algorithm'] = data['used_options']['algo']
+    metadata['comparator'] = data['used_options']['tokenComparator']['type']
+    try:
+        metadata['threshold'] = data['used_options']['tokenComparator']['c3']
+    except(KeyError):
+        metadata['threshold'] = ""
+    metadata['time_start'] = data['align_start']
+    metadata['time_end'] = data['align_end']
+    return metadata
 
 def collation_table_csv_file(data, output_file):
     """Process the collation table and return a CSV representation of it.
@@ -252,7 +291,7 @@ def collation_table_html(table):
     return shifted_array
 
 
-def wrap_table_html(table_array):
+def wrap_table_html(table_array, metadata):
     """Wrap the html table in a html document. Return html document as string.
 
     Keyword Arguments:
@@ -263,7 +302,10 @@ def wrap_table_html(table_array):
     <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Collation of witnesses</title>
+        <title>Collation of witnesses """
+    html += metadata['manuscripts']
+    html += """
+        </title>
         <style>
         td { border: 1px solid #d3d3d3; white-space: nowrap; padding: 0.25em; }
         table.alignment {
@@ -295,8 +337,36 @@ def wrap_table_html(table_array):
         </style>
     </head>
     <body>
-    <div id="alignment-table">
     """
+    html += '<h1>'
+    if args['--title']:
+        html += args['--title'] + ' (' + args['--output'] + ')'
+    else:
+        html += args['--output']
+    html += '</h1>'
+    html += '<h2>Collation of witnesses '
+    html += metadata['manuscripts']
+    html += '</h2>'
+    html += '<p>Algorithm: '
+    html += metadata['algorithm']
+    html += ', token comparator: '
+    html += metadata['comparator']
+    if metadata['threshold']:
+        html += ' (threshold: '
+        html += metadata['threshold']
+        html += ')'
+    html += '</p>'
+    html += '<p>Collation started '
+    start = datetime.strptime(metadata['time_start'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+    end = datetime.strptime(metadata['time_end'], "%Y-%m-%dT%H:%M:%S.%fZ").replace(microsecond=0)
+    duration = end - start
+    html += str(start)
+    html += ' and ended '
+    html += str(end)
+    html += ' (duration: '
+    html += str(duration)
+    html += ').</p>'
+    html += '<div id="alignment-table">'
     for row in table_array:
         html += '<table class="alignment">'
         for sub_row in row:
@@ -341,7 +411,6 @@ def collation_table_tei(data):
         #
         cleaned_content = {wit: content for wit, content in enumerate(newline)}
         sorted_witnesses = []
-        lesungen = []
         compared = []
         for wit in cleaned_content:
             # create a temporary copy of the dictionary so we can change it during processing and
@@ -368,9 +437,6 @@ def collation_table_tei(data):
                 # Add the wit_eqs list to the result list
                 sorted_witnesses.append(wit_eqs)
         all_readings.append(sorted_witnesses)
-    set_title = "Titel"
-    set_editor = "Forname Surname"
-    set_editorID = "FS"
     if args['--title']:
         set_title = args['--title']
     else:
@@ -463,15 +529,18 @@ def collation_table_tei(data):
             p.appendChild(app)
             text_node = d.createTextNode(" ")
             p.appendChild(text_node)
-            for index, entry in enumerate(list_i):
-            #for entry in list_i:
+            tokens = [item[0] for item in list_i if item[0]]
+            seen = set()
+            duplicates = [x for x in tokens if x in seen or seen.add(x)] 
+            for entry in list_i:
                 rdg = d.createElementNS("http://www.tei-c.org/ns/1.0", "rdg")
                 app.appendChild(rdg)
                 text_node = d.createTextNode(re.sub(" ","",entry[1]))
                 rdg.appendChild(text_node)
-                for that in list_i[index+1:]:
-                    if that[0]  == entry[0]:
-                        rdg.setAttribute("type","orthographic")
+                if entry[1] == "":
+                    rdg.setAttribute("cause","omission")
+                if entry[0] in duplicates:
+                    rdg.setAttribute("type","orthographic")
                 witlist = []
                 for i in entry[2:]:
                     wits = numbered_witnesses[i]
@@ -512,7 +581,8 @@ if __name__ == "__main__":
     collation_json_file = collation_json(collation_table)
     tei_table = collation_table_tei(collation_table)
     html_table = collation_table_html(collation_table)
-    output_html = wrap_table_html(html_table)
+    collation_metadata = get_collation_metadata(collation_table)
+    output_html = wrap_table_html(html_table, collation_metadata)
 
     if args['--output']:
         output_file = args['--output']
