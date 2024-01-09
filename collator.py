@@ -49,6 +49,14 @@ def diacritics(inputText):
 def interpunction(inputText):
     return re.sub(r'[.,:··;›»⁘—\+\-\n]+', r'', inputText)
 
+def clean(text):
+    """Remove superfluous spaces and linebreaks from extracted text"""
+    cleaned = re.sub(r"\n",r"",text)
+    cleaned = re.sub(r"\s{2,}",r" ",cleaned)
+    cleaned = re.sub(r"=\s",r"=",cleaned)
+    cleaned = re.sub(r"\s([).,··:;?]+)",r"\1",cleaned)
+    return cleaned
+
 def convert_xml_to_plaintext(xml_files):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
     saxon installed.
@@ -85,7 +93,7 @@ def convert_xml_to_plaintext(xml_files):
         text = unicodedata.normalize("NFC", text)
         if args['--interpunction']:
             text = interpunction(text)
-        text = diacritics(text)
+        text = diacritics(clean(text))
         # convert text to tokens
         witness_dictionary = dict(id=siglum,tokens=text)
         output_dict['witnesses'].append(witness_dictionary)
@@ -122,7 +130,7 @@ def run_collatex(input_file):
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
-        pass#raise Exception(err)
+        pass #raise Exception(err)
     return json.loads(out)
 
 def collation_json(table):
@@ -135,6 +143,18 @@ def collation_json(table):
         fp.write(json.dumps(table, ensure_ascii=False))
         logging.info(f'Write JSON-Collation-file file to {fp.name}')
     return fp   
+
+def write_metadata_file(metadata):
+    """Write the `metadata` to a local file for reference.
+    """
+    if args['--output']:
+        output_file = args['--output']
+    else:
+        output_file = 'output'
+    with open(output_file+"_metadata.json", "w", encoding='utf8') as fp:
+        fp.write(json.dumps(metadata, indent=4, ensure_ascii=False))
+        logging.info(f'Write metadata file to {fp.name}')
+    return fp
 
 def get_collation_metadata(data):
     """Process the collation table and extract metadata.
@@ -153,6 +173,7 @@ def get_collation_metadata(data):
         metadata['threshold'] = ""
     metadata['time_start'] = data['align_start']
     metadata['time_end'] = data['align_end']
+    write_metadata_file(metadata)
     return metadata
 
 def collation_table_csv_file(data, output_file):
@@ -239,7 +260,7 @@ def collation_table_html(table):
                 sorted_witnesses.append(wit_eqs)
 
         # Assign colour classes
-        colours = ['Melon', 'Pastel_Yellow', 'Very_Pale_Orange', 'Dirty_White', 'Magic_Mint', 'Light_Salmon_Pink', 'Crayola',  'Vodka', 'Pale_Blue', 'Granny_Smith_Apple', 'Calamansi', 'Persian_Pink', 'Ceil', 'Orchid', 'Tea_Green', 'Pearl_Aqua', 'Aero', 'Pastel_Purple', 'Light_Silver', 'Pastel_Blue', 'Black_Shadows', 'Shadow_Blue', 'Laurel_Green']
+        colours = ['lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey', 'lightsteelblue', 'lightyellow', 'aquamarine', 'azure', 'beige', 'bisque', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'deeppink', 'deepskyblue', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'green', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'whitesmoke', 'yellow', 'yellowgreen']
         colour_classes = {}
         for i, item in enumerate(sorted_witnesses):
             # If we have differences, mark with colours
@@ -311,28 +332,127 @@ def wrap_table_html(table_array, metadata):
         table.alignment {
             border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;
         }
-        td.Melon { background-color: #FFB7B2; }
-        td.Pastel_Yellow {background-color: #FDFD95}
-        td.Very_Pale_Orange { background-color: #FFDAC1; }
-        td.Dirty_White { background-color: #E2F0CB; }
-        td.Magic { background-color: #B5EAD7; }
-        td.Crayola { background-color: #C7CEEA; }
-        td.Light_Salmon_Pink { background-color: #FF9AA2; }
-        td.Vodka { background-color: #B2B7F6; }
-        td.Pale_Blue { background-color: #B2F6F0; }
-        td.Granny_Smith_Apple { background-color: #B3EE9A; }
-        td.Calamansi { background-color: #F6F39F; }
-        td.Ceil { background-color: #998AD3; }
-        td.Orchid { background-color: #E494D3; }
-        td.Tea_Green { background-color: #CDF1AF; }
-        td.Pearl_Aqua { background-color: #87DCC0; }
-        td.Aero { background-color: #88BBE4; }
-        td.Pastel_Purple { background-color: #B29DB6; }
-        td.Light_Silver { background-color: #D6D6D6; }
-        td.Pastel_Blue { background-color: #ABC3CE; }
-        td.Black_Shadows { background-color: #C5AEB4; }
-        td.Shadow_Blue { background-color: #7B8FA5; }
-        td.Laurel_Green { background-color: #99B49F; }
+        td.aquamarine { background-color: #7FFFD4; }
+        td.azure { background-color: #F0FFFF; }
+        td.beige { background-color: #F5F5DC; }
+        td.bisque { background-color: #FFE4C4; }
+        td.blanchedalmond { background-color: #FFEBCD; }
+        td.blue { background-color: #0000FF; }
+        td.blueviolet { background-color: #8A2BE2; }
+        td.brown { background-color: #A52A2A; }
+        td.burlywood { background-color: #DEB887; }
+        td.cadetblue { background-color: #5F9EA0; }
+        td.chartreuse { background-color: #7FFF00; }
+        td.chocolate { background-color: #D2691E; }
+        td.coral { background-color: #FF7F50; }
+        td.cornflowerblue { background-color: #6495ED; }
+        td.cornsilk { background-color: #FFF8DC; }
+        td.crimson { background-color: #DC143C; }
+        td.cyan { background-color: #00FFFF; }
+        td.deeppink { background-color: #FF1493; }
+        td.deepskyblue { background-color: #00BFFF; }
+        td.dodgerblue { background-color: #1E90FF; }
+        td.firebrick { background-color: #B22222; }
+        td.floralwhite { background-color: #FFFAF0; }
+        td.forestgreen { background-color: #228B22; }
+        td.fuchsia { background-color: #FF00FF; }
+        td.gainsboro { background-color: #DCDCDC; }
+        td.ghostwhite { background-color: #F8F8FF; }
+        td.gold { background-color: #FFD700; }
+        td.goldenrod { background-color: #DAA520; }
+        td.green { background-color: #008000; }
+        td.greenyellow { background-color: #ADFF2F; }
+        td.honeydew { background-color: #F0FFF0; }
+        td.hotpink { background-color: #FF69B4; }
+        td.indianred { background-color: #CD5C5C; }
+        td.indigo { background-color: #4B0082; }
+        td.ivory { background-color: #FFFFF0; }
+        td.khaki { background-color: #F0E68C; }
+        td.lavender { background-color: #E6E6FA; }
+        td.lavenderblush { background-color: #FFF0F5; }
+        td.lawngreen { background-color: #7CFC00; }
+        td.lemonchiffon { background-color: #FFFACD; }
+        td.lightblue { background-color: #ADD8E6; }
+        td.lightcoral { background-color: #F08080; }
+        td.lightcyan { background-color: #E0FFFF; }
+        td.lightgoldenrodyellow { background-color: #FAFAD2; }
+        td.lightgray { background-color: #D3D3D3; }
+        td.lightgreen { background-color: #90EE90; }
+        td.lightgrey { background-color: #D3D3D3; }
+        td.lightpink { background-color: #FFB6C1; }
+        td.lightsalmon { background-color: #FFA07A; }
+        td.lightseagreen { background-color: #20B2AA; }
+        td.lightskyblue { background-color: #87CEFA; }
+        td.lightslategray { background-color: #778899; }
+        td.lightslategrey { background-color: #778899; }
+        td.lightsteelblue { background-color: #B0C4DE; }
+        td.lightyellow { background-color: #FFFFE0; }
+        td.lime { background-color: #00FF00; }
+        td.limegreen { background-color: #32CD32; }
+        td.linen { background-color: #FAF0E6; }
+        td.magenta { background-color: #FF00FF; }
+        td.maroon { background-color: #800000; }
+        td.mediumaquamarine { background-color: #66CDAA; }
+        td.mediumblue { background-color: #0000CD; }
+        td.mediumorchid { background-color: #BA55D3; }
+        td.mediumpurple { background-color: #9370DB; }
+        td.mediumseagreen { background-color: #3CB371; }
+        td.mediumslateblue { background-color: #7B68EE; }
+        td.mediumspringgreen { background-color: #00FA9A; }
+        td.mediumturquoise { background-color: #48D1CC; }
+        td.mediumvioletred { background-color: #C71585; }
+        td.midnightblue { background-color: #191970; }
+        td.mintcream { background-color: #F5FFFA; }
+        td.mistyrose { background-color: #FFE4E1; }
+        td.moccasin { background-color: #FFE4B5; }
+        td.navajowhite { background-color: #FFDEAD; }
+        td.navy { background-color: #000080; }
+        td.oldlace { background-color: #FDF5E6; }
+        td.olive { background-color: #808000; }
+        td.olivedrab { background-color: #6B8E23; }
+        td.orange { background-color: #FFA500; }
+        td.orangered { background-color: #FF4500; }
+        td.orchid { background-color: #DA70D6; }
+        td.palegoldenrod { background-color: #EEE8AA; }
+        td.palegreen { background-color: #98FB98; }
+        td.paleturquoise { background-color: #AFEEEE; }
+        td.palevioletred { background-color: #DB7093; }
+        td.papayawhip { background-color: #FFEFD5; }
+        td.peachpuff { background-color: #FFDAB9; }
+        td.peru { background-color: #CD853F; }
+        td.pink { background-color: #FFC0CB; }
+        td.plum { background-color: #DDA0DD; }
+        td.powderblue { background-color: #B0E0E6; }
+        td.purple { background-color: #800080; }
+        td.rebeccapurple { background-color: #663399; }
+        td.red { background-color: #FF0000; }
+        td.rosybrown { background-color: #BC8F8F; }
+        td.royalblue { background-color: #4169E1; }
+        td.saddlebrown { background-color: #8B4513; }
+        td.salmon { background-color: #FA8072; }
+        td.sandybrown { background-color: #F4A460; }
+        td.seagreen { background-color: #2E8B57; }
+        td.seashell { background-color: #FFF5EE; }
+        td.sienna { background-color: #A0522D; }
+        td.silver { background-color: #C0C0C0; }
+        td.skyblue { background-color: #87CEEB; }
+        td.slateblue { background-color: #6A5ACD; }
+        td.slategray { background-color: #708090; }
+        td.slategrey { background-color: #708090; }
+        td.snow { background-color: #FFFAFA; }
+        td.springgreen { background-color: #00FF7F; }
+        td.steelblue { background-color: #4682B4; }
+        td.tan { background-color: #D2B48C; }
+        td.teal { background-color: #008080; }
+        td.thistle { background-color: #D8BFD8; }
+        td.tomato { background-color: #FF6347; }
+        td.turquoise { background-color: #40E0D0; }
+        td.violet { background-color: #EE82EE; }
+        td.wheat { background-color: #F5DEB3; }
+        td.white { background-color: #FFFFFF; }
+        td.whitesmoke { background-color: #F5F5F5; }
+        td.yellow { background-color: #FFFF00; }
+        td.yellowgreen { background-color: #9ACD32; }
         td.empty { border: 1px dotted; }
         </style>
     </head>

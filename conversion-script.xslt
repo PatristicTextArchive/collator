@@ -13,6 +13,17 @@
     <!-- {content:<xsl:apply-templates select="//body//div[@n='6']"/>} -->
   </xsl:template>
 
+  <xsl:template match="text()">
+        <xsl:analyze-string select="." regex="ϗ">
+            <xsl:matching-substring>
+              <xsl:text>(καὶ)</xsl:text>
+            </xsl:matching-substring>
+            <xsl:non-matching-substring>
+                <xsl:value-of select="."/>
+            </xsl:non-matching-substring>
+        </xsl:analyze-string>
+  </xsl:template>
+
   <xsl:template match="div//head"><xsl:text> </xsl:text><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
 
   <xsl:template match="p">
@@ -47,6 +58,9 @@
       <xsl:text>{overline=</xsl:text>
       <xsl:apply-templates/>
       <xsl:text>}</xsl:text>
+    </xsl:if>
+    <xsl:if test="@rend='rubricated'">
+      <xsl:apply-templates/>
     </xsl:if>
   </xsl:template>
 
