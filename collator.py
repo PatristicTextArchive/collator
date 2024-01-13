@@ -33,10 +33,11 @@ import re
 import os
 import subprocess
 import unicodedata
+import pandas as pd
 from datetime import datetime
 from xml.dom.minidom import Document
 
-__version__ = '0.2.0'
+__version__ = '0.4.0'
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -48,6 +49,14 @@ def diacritics(inputText):
 
 def interpunction(inputText):
     return re.sub(r'[.,:··;›»⁘—\+\-\n]+', r'', inputText)
+
+def clean(text):
+    """Remove superfluous spaces and linebreaks from extracted text"""
+    cleaned = re.sub(r"\n",r"",text)
+    cleaned = re.sub(r"\s{2,}",r" ",cleaned)
+    cleaned = re.sub(r"=\s",r"=",cleaned)
+    cleaned = re.sub(r"\s([).,··:;?]+)",r"\1",cleaned)
+    return cleaned
 
 def convert_xml_to_plaintext(xml_files):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
@@ -85,7 +94,7 @@ def convert_xml_to_plaintext(xml_files):
         text = unicodedata.normalize("NFC", text)
         if args['--interpunction']:
             text = interpunction(text)
-        text = diacritics(text)
+        text = diacritics(clean(text))
         # convert text to tokens
         witness_dictionary = dict(id=siglum,tokens=text)
         output_dict['witnesses'].append(witness_dictionary)
@@ -122,7 +131,7 @@ def run_collatex(input_file):
                             input_file.name], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if err:
-        pass#raise Exception(err)
+        pass #raise Exception(err)
     return json.loads(out)
 
 def collation_json(table):
@@ -179,6 +188,227 @@ def collation_table_csv_file(data, output_file):
         logging.info(f'{f.name} created.')
     return f
 
+
+def collation_table_graph_file(data, output_file):
+    """Process the collation table and return a Graphviz dot representation of it.
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """    
+    with open(output_file, 'w') as outfile:
+        outfile.write("digraph {\n")
+    numbered_witnesses = {k: wit for k, wit in enumerate(data['witnesses'])}
+    all_readings = []
+    for line in data['table']:
+        # rewrite empty token set
+        newline = []
+        for content in line:
+            if not content:
+                content = {'t': '', 'n': ''}
+                newline.append(content)
+            else:
+                newline.append(content[0])
+        #
+        cleaned_content = {wit: content for wit, content in enumerate(newline)}
+        sorted_witnesses = []
+        compared = []
+        count_outer = 0
+        for wit in cleaned_content:
+            # create a temporary copy of the dictionary so we can change it during processing and
+            # pop the witness under investigation. We want it popped to avoid match in every case.
+            tmp = cleaned_content.copy()
+            popped = tmp.pop(wit)
+            # If the witness has not already been matched, see if there are matches in other
+            # witnesses.    
+            count_outer = count_outer+1
+            counter_inner = 0
+            if wit not in compared:
+                counter_inner = counter_inner+1
+                id = str(count_outer)+"."+str(counter_inner)
+                # Add the witness to list of equals, as unique witnesses go to the result list too.
+                wit_eqs = list()
+                wit_eqs.append(popped['n'])
+                wit_eqs.append(popped['t'])
+                wit_eqs.append(wit)
+                # If there are other witnesses with the same content, check which
+                if popped in tmp.values():
+                    # Iterate all other witnesses
+                    for sub_wit, value in tmp.items():
+                        # Register which match and add those to the `wit_eqs` and `compared` lists.
+                        if popped['n'] == value['n']:
+                            if popped['t'] == value['t']:
+                                wit_eqs.append(sub_wit)
+                                compared.append(sub_wit)
+                # Add the wit_eqs list to the result list
+                sorted_witnesses.append(wit_eqs)
+        all_readings.append(sorted_witnesses)
+    # ab hier
+    count_outer = 0
+    flatlist = []
+    start = {"id":"0.0","word":"°","witnesses":data["witnesses"]}
+    flatlist.append(start)
+    for list_i in all_readings:
+        tokens = [item[0] for item in list_i if item[0]]
+        seen = set()
+        duplicates = [x for x in tokens if x in seen or seen.add(x)] 
+        count_outer = count_outer+1
+        counter_inner = 0
+        for entry in list_i:
+            items = {}
+            counter_inner = counter_inner+1
+            id = str(count_outer)+"."+str(counter_inner)
+            if entry[1] == "":
+                counter_inner = counter_inner-1
+                pass
+            elif entry[0] in duplicates:  
+                items["id"] = id 
+                items["word"] = "orth: "+entry[1]
+            else:   
+                items["id"] = id
+                items["word"] = entry[1]
+            if entry[1]:
+                witlist = []
+                for i in entry[2:]:
+                    wits = numbered_witnesses[i]
+                    witlist.append(wits)
+                items["witnesses"] = witlist
+                flatlist.append(items)
+    start = {"id":str(len(all_readings))+".0","word":"°","witnesses":data["witnesses"]}
+    flatlist.append(start)
+    df = pd.DataFrame(flatlist)
+    with open(output_file, 'a') as outfile:
+        for entry in flatlist:
+            outfile.write(entry['id']+' [label="'+entry['word']+'"]\n')
+    edges = {}
+    for wit in data['witnesses']:
+        witlist = [wit]
+        new = df[df.witnesses.apply(lambda x: bool(set(x) & set(witlist)))]['id'].tolist()
+        thisedges = []
+        for index, item in enumerate(new):
+            if index < len(new) - 1:
+                edge = item+' -> '+new[index + 1]
+            thisedges.append(edge)
+        edges[wit] = thisedges
+    alledges = set(num for sublist in edges.values() for num in sublist)
+    final_edges = []
+    for entry in alledges:
+        collect = {}
+        collect["edge"] = entry
+        witnesses = []
+        for key, val in edges.items():
+            if entry in val:
+                witnesses.append(key)
+        collect["wit"] = ",".join(witnesses)
+        final_edges.append(collect)
+    with open(output_file, 'a') as outfile:
+        for entry in final_edges:
+            outfile.write(entry['edge']+' [label="'+entry['wit']+'"]\n')
+        outfile.write("}")
+        logging.info(f'{outfile.name} created.')
+    return output_file
+
+
+def collation_table_nexus_file(data,output_file):
+    """Process the collation table and return a Nexus representation of it for further processing with
+    phylogenetic software. Caution: misalignments may 
+    cause serious problems for the interpretation of the
+    file!
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """    
+    numbered_witnesses = {k: wit for k, wit in enumerate(data['witnesses'])}
+    all_readings = []
+    for line in data['table']:
+        # rewrite empty token set
+        newline = []
+        for content in line:
+            if not content:
+                content = {'t': '', 'n': ''}
+                newline.append(content)
+            else:
+                newline.append(content[0])
+        #
+        cleaned_content = {wit: content for wit, content in enumerate(newline)}
+        sorted_witnesses = []
+        compared = []
+        count_outer = 0
+        for wit in cleaned_content:
+            # create a temporary copy of the dictionary so we can change it during processing and
+            # pop the witness under investigation. We want it popped to avoid match in every case.
+            tmp = cleaned_content.copy()
+            popped = tmp.pop(wit)
+            # If the witness has not already been matched, see if there are matches in other
+            # witnesses.    
+            count_outer = count_outer+1
+            counter_inner = 0
+            if wit not in compared:
+                counter_inner = counter_inner+1
+                id = str(count_outer)+"."+str(counter_inner)
+                # Add the witness to list of equals, as unique witnesses go to the result list too.
+                wit_eqs = list()
+                wit_eqs.append(popped['n'])
+                wit_eqs.append(popped['t'])
+                wit_eqs.append(wit)
+                # If there are other witnesses with the same content, check which
+                if popped in tmp.values():
+                    # Iterate all other witnesses
+                    for sub_wit, value in tmp.items():
+                        # Register which match and add those to the `wit_eqs` and `compared` lists.
+                        if popped['n'] == value['n']:
+                            if popped['t'] == value['t']:
+                                wit_eqs.append(sub_wit)
+                                compared.append(sub_wit)
+                # Add the wit_eqs list to the result list
+                sorted_witnesses.append(wit_eqs)
+        all_readings.append(sorted_witnesses)
+    flatlist = []
+    symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "k", "l", "m", "n", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
+    for list_i in all_readings:
+        tokens = [item[0] for item in list_i if item[0]]
+        seen = set()
+        duplicates = [x for x in tokens if x in seen or seen.add(x)]
+        duplicate_index =[index for index, token in enumerate(tokens) if token in duplicates]
+        counter_inner = 1
+        for index, entry in enumerate(list_i):
+            items = {}
+            if entry[1] == "":
+                items["id"] = "?"
+                #counter_inner = counter_inner-1
+            elif entry[0] in duplicates: 
+                distance = index-duplicate_index[0]
+                items["id"] = symbols[counter_inner-distance]
+            else:   
+                items["id"] = symbols[counter_inner]
+            witlist = []
+            for i in entry[2:]:
+                wits = numbered_witnesses[i]
+                witlist.append(wits)
+            items["witnesses"] = witlist
+            flatlist.append(items)
+            counter_inner = counter_inner+1
+    nexus = []
+    for entry in data["witnesses"]:
+        collect = {}
+        collect["ms"] = entry
+        status = []
+        for x in flatlist:
+            if entry in x["witnesses"]:
+                status.append(x["id"])
+        collect["status"] = status
+        nexus.append(collect)
+    with open(output_file, 'w') as outfile:
+        outfile.write('#NEXUS\n')
+        outfile.write('begin data;\n')
+        outfile.write('  dimensions ntax='+str(len(data["witnesses"]))+' nchar='+str(len(nexus[0]["status"]))+';\n')
+        outfile.write('  format datatype=standard symbols="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" missing=? gap=-;\n')
+        outfile.write('matrix\n')
+        for n in nexus:
+            outfile.write(n['ms']+'\t'+''.join(n['status'])+'\n')
+        outfile.write(';\n')
+        outfile.write('end;\n')        
+    logging.info(f'{outfile.name} created.')
+    return output_file
 
 def collation_table_html(table):
     """Process the collation table and return a HTML representation of it.
@@ -239,7 +469,7 @@ def collation_table_html(table):
                 sorted_witnesses.append(wit_eqs)
 
         # Assign colour classes
-        colours = ['Melon', 'Pastel_Yellow', 'Very_Pale_Orange', 'Dirty_White', 'Magic_Mint', 'Light_Salmon_Pink', 'Crayola',  'Vodka', 'Pale_Blue', 'Granny_Smith_Apple', 'Calamansi', 'Persian_Pink', 'Ceil', 'Orchid', 'Tea_Green', 'Pearl_Aqua', 'Aero', 'Pastel_Purple', 'Light_Silver', 'Pastel_Blue', 'Black_Shadows', 'Shadow_Blue', 'Laurel_Green']
+        colours = ['lightblue', 'lightcoral', 'lightcyan', 'lightgoldenrodyellow', 'lightgreen', 'lightpink', 'lightsalmon', 'lightseagreen', 'lightskyblue', 'lightslategray', 'lightslategrey', 'lightsteelblue', 'lightyellow', 'aquamarine', 'azure', 'beige', 'bisque', 'blanchedalmond', 'blue', 'blueviolet', 'brown', 'burlywood', 'cadetblue', 'chartreuse', 'chocolate', 'coral', 'cornflowerblue', 'cornsilk', 'crimson', 'cyan', 'deeppink', 'deepskyblue', 'dodgerblue', 'firebrick', 'floralwhite', 'forestgreen', 'fuchsia', 'gainsboro', 'ghostwhite', 'gold', 'goldenrod', 'green', 'greenyellow', 'honeydew', 'hotpink', 'indianred', 'indigo', 'ivory', 'khaki', 'lavender', 'lavenderblush', 'lawngreen', 'lemonchiffon', 'lime', 'limegreen', 'linen', 'magenta', 'maroon', 'mediumaquamarine', 'mediumblue', 'mediumorchid', 'mediumpurple', 'mediumseagreen', 'mediumslateblue', 'mediumspringgreen', 'mediumturquoise', 'mediumvioletred', 'midnightblue', 'mintcream', 'mistyrose', 'moccasin', 'navajowhite', 'navy', 'oldlace', 'olive', 'olivedrab', 'orange', 'orangered', 'orchid', 'palegoldenrod', 'palegreen', 'paleturquoise', 'palevioletred', 'papayawhip', 'peachpuff', 'peru', 'pink', 'plum', 'powderblue', 'purple', 'rebeccapurple', 'red', 'rosybrown', 'royalblue', 'saddlebrown', 'salmon', 'sandybrown', 'seagreen', 'seashell', 'sienna', 'silver', 'skyblue', 'slateblue', 'slategray', 'slategrey', 'snow', 'springgreen', 'steelblue', 'tan', 'teal', 'thistle', 'tomato', 'turquoise', 'violet', 'wheat', 'whitesmoke', 'yellow', 'yellowgreen']
         colour_classes = {}
         for i, item in enumerate(sorted_witnesses):
             # If we have differences, mark with colours
@@ -311,28 +541,127 @@ def wrap_table_html(table_array, metadata):
         table.alignment {
             border-collapse: separate; border-spacing: 0.25em; margin: 0.25em; border-top: 1px solid #d3d3d3;
         }
-        td.Melon { background-color: #FFB7B2; }
-        td.Pastel_Yellow {background-color: #FDFD95}
-        td.Very_Pale_Orange { background-color: #FFDAC1; }
-        td.Dirty_White { background-color: #E2F0CB; }
-        td.Magic { background-color: #B5EAD7; }
-        td.Crayola { background-color: #C7CEEA; }
-        td.Light_Salmon_Pink { background-color: #FF9AA2; }
-        td.Vodka { background-color: #B2B7F6; }
-        td.Pale_Blue { background-color: #B2F6F0; }
-        td.Granny_Smith_Apple { background-color: #B3EE9A; }
-        td.Calamansi { background-color: #F6F39F; }
-        td.Ceil { background-color: #998AD3; }
-        td.Orchid { background-color: #E494D3; }
-        td.Tea_Green { background-color: #CDF1AF; }
-        td.Pearl_Aqua { background-color: #87DCC0; }
-        td.Aero { background-color: #88BBE4; }
-        td.Pastel_Purple { background-color: #B29DB6; }
-        td.Light_Silver { background-color: #D6D6D6; }
-        td.Pastel_Blue { background-color: #ABC3CE; }
-        td.Black_Shadows { background-color: #C5AEB4; }
-        td.Shadow_Blue { background-color: #7B8FA5; }
-        td.Laurel_Green { background-color: #99B49F; }
+        td.aquamarine { background-color: #7FFFD4; }
+        td.azure { background-color: #F0FFFF; }
+        td.beige { background-color: #F5F5DC; }
+        td.bisque { background-color: #FFE4C4; }
+        td.blanchedalmond { background-color: #FFEBCD; }
+        td.blue { background-color: #0000FF; }
+        td.blueviolet { background-color: #8A2BE2; }
+        td.brown { background-color: #A52A2A; }
+        td.burlywood { background-color: #DEB887; }
+        td.cadetblue { background-color: #5F9EA0; }
+        td.chartreuse { background-color: #7FFF00; }
+        td.chocolate { background-color: #D2691E; }
+        td.coral { background-color: #FF7F50; }
+        td.cornflowerblue { background-color: #6495ED; }
+        td.cornsilk { background-color: #FFF8DC; }
+        td.crimson { background-color: #DC143C; }
+        td.cyan { background-color: #00FFFF; }
+        td.deeppink { background-color: #FF1493; }
+        td.deepskyblue { background-color: #00BFFF; }
+        td.dodgerblue { background-color: #1E90FF; }
+        td.firebrick { background-color: #B22222; }
+        td.floralwhite { background-color: #FFFAF0; }
+        td.forestgreen { background-color: #228B22; }
+        td.fuchsia { background-color: #FF00FF; }
+        td.gainsboro { background-color: #DCDCDC; }
+        td.ghostwhite { background-color: #F8F8FF; }
+        td.gold { background-color: #FFD700; }
+        td.goldenrod { background-color: #DAA520; }
+        td.green { background-color: #008000; }
+        td.greenyellow { background-color: #ADFF2F; }
+        td.honeydew { background-color: #F0FFF0; }
+        td.hotpink { background-color: #FF69B4; }
+        td.indianred { background-color: #CD5C5C; }
+        td.indigo { background-color: #4B0082; }
+        td.ivory { background-color: #FFFFF0; }
+        td.khaki { background-color: #F0E68C; }
+        td.lavender { background-color: #E6E6FA; }
+        td.lavenderblush { background-color: #FFF0F5; }
+        td.lawngreen { background-color: #7CFC00; }
+        td.lemonchiffon { background-color: #FFFACD; }
+        td.lightblue { background-color: #ADD8E6; }
+        td.lightcoral { background-color: #F08080; }
+        td.lightcyan { background-color: #E0FFFF; }
+        td.lightgoldenrodyellow { background-color: #FAFAD2; }
+        td.lightgray { background-color: #D3D3D3; }
+        td.lightgreen { background-color: #90EE90; }
+        td.lightgrey { background-color: #D3D3D3; }
+        td.lightpink { background-color: #FFB6C1; }
+        td.lightsalmon { background-color: #FFA07A; }
+        td.lightseagreen { background-color: #20B2AA; }
+        td.lightskyblue { background-color: #87CEFA; }
+        td.lightslategray { background-color: #778899; }
+        td.lightslategrey { background-color: #778899; }
+        td.lightsteelblue { background-color: #B0C4DE; }
+        td.lightyellow { background-color: #FFFFE0; }
+        td.lime { background-color: #00FF00; }
+        td.limegreen { background-color: #32CD32; }
+        td.linen { background-color: #FAF0E6; }
+        td.magenta { background-color: #FF00FF; }
+        td.maroon { background-color: #800000; }
+        td.mediumaquamarine { background-color: #66CDAA; }
+        td.mediumblue { background-color: #0000CD; }
+        td.mediumorchid { background-color: #BA55D3; }
+        td.mediumpurple { background-color: #9370DB; }
+        td.mediumseagreen { background-color: #3CB371; }
+        td.mediumslateblue { background-color: #7B68EE; }
+        td.mediumspringgreen { background-color: #00FA9A; }
+        td.mediumturquoise { background-color: #48D1CC; }
+        td.mediumvioletred { background-color: #C71585; }
+        td.midnightblue { background-color: #191970; }
+        td.mintcream { background-color: #F5FFFA; }
+        td.mistyrose { background-color: #FFE4E1; }
+        td.moccasin { background-color: #FFE4B5; }
+        td.navajowhite { background-color: #FFDEAD; }
+        td.navy { background-color: #000080; }
+        td.oldlace { background-color: #FDF5E6; }
+        td.olive { background-color: #808000; }
+        td.olivedrab { background-color: #6B8E23; }
+        td.orange { background-color: #FFA500; }
+        td.orangered { background-color: #FF4500; }
+        td.orchid { background-color: #DA70D6; }
+        td.palegoldenrod { background-color: #EEE8AA; }
+        td.palegreen { background-color: #98FB98; }
+        td.paleturquoise { background-color: #AFEEEE; }
+        td.palevioletred { background-color: #DB7093; }
+        td.papayawhip { background-color: #FFEFD5; }
+        td.peachpuff { background-color: #FFDAB9; }
+        td.peru { background-color: #CD853F; }
+        td.pink { background-color: #FFC0CB; }
+        td.plum { background-color: #DDA0DD; }
+        td.powderblue { background-color: #B0E0E6; }
+        td.purple { background-color: #800080; }
+        td.rebeccapurple { background-color: #663399; }
+        td.red { background-color: #FF0000; }
+        td.rosybrown { background-color: #BC8F8F; }
+        td.royalblue { background-color: #4169E1; }
+        td.saddlebrown { background-color: #8B4513; }
+        td.salmon { background-color: #FA8072; }
+        td.sandybrown { background-color: #F4A460; }
+        td.seagreen { background-color: #2E8B57; }
+        td.seashell { background-color: #FFF5EE; }
+        td.sienna { background-color: #A0522D; }
+        td.silver { background-color: #C0C0C0; }
+        td.skyblue { background-color: #87CEEB; }
+        td.slateblue { background-color: #6A5ACD; }
+        td.slategray { background-color: #708090; }
+        td.slategrey { background-color: #708090; }
+        td.snow { background-color: #FFFAFA; }
+        td.springgreen { background-color: #00FF7F; }
+        td.steelblue { background-color: #4682B4; }
+        td.tan { background-color: #D2B48C; }
+        td.teal { background-color: #008080; }
+        td.thistle { background-color: #D8BFD8; }
+        td.tomato { background-color: #FF6347; }
+        td.turquoise { background-color: #40E0D0; }
+        td.violet { background-color: #EE82EE; }
+        td.wheat { background-color: #F5DEB3; }
+        td.white { background-color: #FFFFFF; }
+        td.whitesmoke { background-color: #F5F5F5; }
+        td.yellow { background-color: #FFFF00; }
+        td.yellowgreen { background-color: #9ACD32; }
         td.empty { border: 1px dotted; }
         </style>
     </head>
@@ -525,7 +854,7 @@ def collation_table_tei(data):
                 p.appendChild(text_node)
         else: 
             app = d.createElementNS("http://www.tei-c.org/ns/1.0", "app")
-            app.setAttribute("type","textcritical")
+            app.setAttribute("type","variants")
             p.appendChild(app)
             text_node = d.createTextNode(" ")
             p.appendChild(text_node)
@@ -538,9 +867,9 @@ def collation_table_tei(data):
                 text_node = d.createTextNode(re.sub(" ","",entry[1]))
                 rdg.appendChild(text_node)
                 if entry[1] == "":
-                    rdg.setAttribute("cause","omission")
+                    rdg.setAttribute("type","omission")
                 if entry[0] in duplicates:
-                    rdg.setAttribute("type","orthographic")
+                    rdg.setAttribute("cause","orthographic")
                 witlist = []
                 for i in entry[2:]:
                     wits = numbered_witnesses[i]
@@ -591,5 +920,7 @@ if __name__ == "__main__":
     html_file = write_html_to_file(output_html, output_file+".html")
     tei_file = write_tei_to_file(tei_table, output_file+".xml")
     csv_file = collation_table_csv_file(collation_table, output_file+".csv")
+    dot_file = collation_table_graph_file(collation_table, output_file+".dot")
+    nexus_file = collation_table_nexus_file(collation_table, output_file+".nex")
 
     logging.info('Results returned sucessfully.')
