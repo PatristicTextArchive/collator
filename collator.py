@@ -33,10 +33,11 @@ import re
 import os
 import subprocess
 import unicodedata
+import pandas as pd
 from datetime import datetime
 from xml.dom.minidom import Document
 
-__version__ = '0.2.0'
+__version__ = '0.4.0'
 
 BASE_DIR = os.path.dirname(__file__)
 
@@ -200,6 +201,227 @@ def collation_table_csv_file(data, output_file):
         logging.info(f'{f.name} created.')
     return f
 
+
+def collation_table_graph_file(data, output_file):
+    """Process the collation table and return a Graphviz dot representation of it.
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """    
+    with open(output_file, 'w') as outfile:
+        outfile.write("digraph {\n")
+    numbered_witnesses = {k: wit for k, wit in enumerate(data['witnesses'])}
+    all_readings = []
+    for line in data['table']:
+        # rewrite empty token set
+        newline = []
+        for content in line:
+            if not content:
+                content = {'t': '', 'n': ''}
+                newline.append(content)
+            else:
+                newline.append(content[0])
+        #
+        cleaned_content = {wit: content for wit, content in enumerate(newline)}
+        sorted_witnesses = []
+        compared = []
+        count_outer = 0
+        for wit in cleaned_content:
+            # create a temporary copy of the dictionary so we can change it during processing and
+            # pop the witness under investigation. We want it popped to avoid match in every case.
+            tmp = cleaned_content.copy()
+            popped = tmp.pop(wit)
+            # If the witness has not already been matched, see if there are matches in other
+            # witnesses.    
+            count_outer = count_outer+1
+            counter_inner = 0
+            if wit not in compared:
+                counter_inner = counter_inner+1
+                id = str(count_outer)+"."+str(counter_inner)
+                # Add the witness to list of equals, as unique witnesses go to the result list too.
+                wit_eqs = list()
+                wit_eqs.append(popped['n'])
+                wit_eqs.append(popped['t'])
+                wit_eqs.append(wit)
+                # If there are other witnesses with the same content, check which
+                if popped in tmp.values():
+                    # Iterate all other witnesses
+                    for sub_wit, value in tmp.items():
+                        # Register which match and add those to the `wit_eqs` and `compared` lists.
+                        if popped['n'] == value['n']:
+                            if popped['t'] == value['t']:
+                                wit_eqs.append(sub_wit)
+                                compared.append(sub_wit)
+                # Add the wit_eqs list to the result list
+                sorted_witnesses.append(wit_eqs)
+        all_readings.append(sorted_witnesses)
+    # ab hier
+    count_outer = 0
+    flatlist = []
+    start = {"id":"0.0","word":"°","witnesses":data["witnesses"]}
+    flatlist.append(start)
+    for list_i in all_readings:
+        tokens = [item[0] for item in list_i if item[0]]
+        seen = set()
+        duplicates = [x for x in tokens if x in seen or seen.add(x)] 
+        count_outer = count_outer+1
+        counter_inner = 0
+        for entry in list_i:
+            items = {}
+            counter_inner = counter_inner+1
+            id = str(count_outer)+"."+str(counter_inner)
+            if entry[1] == "":
+                counter_inner = counter_inner-1
+                pass
+            elif entry[0] in duplicates:  
+                items["id"] = id 
+                items["word"] = "orth: "+entry[1]
+            else:   
+                items["id"] = id
+                items["word"] = entry[1]
+            if entry[1]:
+                witlist = []
+                for i in entry[2:]:
+                    wits = numbered_witnesses[i]
+                    witlist.append(wits)
+                items["witnesses"] = witlist
+                flatlist.append(items)
+    start = {"id":str(len(all_readings))+".0","word":"°","witnesses":data["witnesses"]}
+    flatlist.append(start)
+    df = pd.DataFrame(flatlist)
+    with open(output_file, 'a') as outfile:
+        for entry in flatlist:
+            outfile.write(entry['id']+' [label="'+entry['word']+'"]\n')
+    edges = {}
+    for wit in data['witnesses']:
+        witlist = [wit]
+        new = df[df.witnesses.apply(lambda x: bool(set(x) & set(witlist)))]['id'].tolist()
+        thisedges = []
+        for index, item in enumerate(new):
+            if index < len(new) - 1:
+                edge = item+' -> '+new[index + 1]
+            thisedges.append(edge)
+        edges[wit] = thisedges
+    alledges = set(num for sublist in edges.values() for num in sublist)
+    final_edges = []
+    for entry in alledges:
+        collect = {}
+        collect["edge"] = entry
+        witnesses = []
+        for key, val in edges.items():
+            if entry in val:
+                witnesses.append(key)
+        collect["wit"] = ",".join(witnesses)
+        final_edges.append(collect)
+    with open(output_file, 'a') as outfile:
+        for entry in final_edges:
+            outfile.write(entry['edge']+' [label="'+entry['wit']+'"]\n')
+        outfile.write("}")
+        logging.info(f'{outfile.name} created.')
+    return output_file
+
+
+def collation_table_nexus_file(data,output_file):
+    """Process the collation table and return a Nexus representation of it for further processing with
+    phylogenetic software. Caution: misalignments may 
+    cause serious problems for the interpretation of the
+    file!
+
+    Keyword Arguments:
+    table -- Dictionary containing the table contents.
+    """    
+    numbered_witnesses = {k: wit for k, wit in enumerate(data['witnesses'])}
+    all_readings = []
+    for line in data['table']:
+        # rewrite empty token set
+        newline = []
+        for content in line:
+            if not content:
+                content = {'t': '', 'n': ''}
+                newline.append(content)
+            else:
+                newline.append(content[0])
+        #
+        cleaned_content = {wit: content for wit, content in enumerate(newline)}
+        sorted_witnesses = []
+        compared = []
+        count_outer = 0
+        for wit in cleaned_content:
+            # create a temporary copy of the dictionary so we can change it during processing and
+            # pop the witness under investigation. We want it popped to avoid match in every case.
+            tmp = cleaned_content.copy()
+            popped = tmp.pop(wit)
+            # If the witness has not already been matched, see if there are matches in other
+            # witnesses.    
+            count_outer = count_outer+1
+            counter_inner = 0
+            if wit not in compared:
+                counter_inner = counter_inner+1
+                id = str(count_outer)+"."+str(counter_inner)
+                # Add the witness to list of equals, as unique witnesses go to the result list too.
+                wit_eqs = list()
+                wit_eqs.append(popped['n'])
+                wit_eqs.append(popped['t'])
+                wit_eqs.append(wit)
+                # If there are other witnesses with the same content, check which
+                if popped in tmp.values():
+                    # Iterate all other witnesses
+                    for sub_wit, value in tmp.items():
+                        # Register which match and add those to the `wit_eqs` and `compared` lists.
+                        if popped['n'] == value['n']:
+                            if popped['t'] == value['t']:
+                                wit_eqs.append(sub_wit)
+                                compared.append(sub_wit)
+                # Add the wit_eqs list to the result list
+                sorted_witnesses.append(wit_eqs)
+        all_readings.append(sorted_witnesses)
+    flatlist = []
+    symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "k", "l", "m", "n", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
+    for list_i in all_readings:
+        tokens = [item[0] for item in list_i if item[0]]
+        seen = set()
+        duplicates = [x for x in tokens if x in seen or seen.add(x)]
+        duplicate_index =[index for index, token in enumerate(tokens) if token in duplicates]
+        counter_inner = 1
+        for index, entry in enumerate(list_i):
+            items = {}
+            if entry[1] == "":
+                items["id"] = "?"
+                #counter_inner = counter_inner-1
+            elif entry[0] in duplicates: 
+                distance = index-duplicate_index[0]
+                items["id"] = symbols[counter_inner-distance]
+            else:   
+                items["id"] = symbols[counter_inner]
+            witlist = []
+            for i in entry[2:]:
+                wits = numbered_witnesses[i]
+                witlist.append(wits)
+            items["witnesses"] = witlist
+            flatlist.append(items)
+            counter_inner = counter_inner+1
+    nexus = []
+    for entry in data["witnesses"]:
+        collect = {}
+        collect["ms"] = entry
+        status = []
+        for x in flatlist:
+            if entry in x["witnesses"]:
+                status.append(x["id"])
+        collect["status"] = status
+        nexus.append(collect)
+    with open(output_file, 'w') as outfile:
+        outfile.write('#NEXUS\n')
+        outfile.write('begin data;\n')
+        outfile.write('  dimensions ntax='+str(len(data["witnesses"]))+' nchar='+str(len(nexus[0]["status"]))+';\n')
+        outfile.write('  format datatype=standard symbols="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" missing=? gap=-;\n')
+        outfile.write('matrix\n')
+        for n in nexus:
+            outfile.write(n['ms']+'\t'+''.join(n['status'])+'\n')
+        outfile.write(';\n')
+        outfile.write('end;\n')        
+    logging.info(f'{outfile.name} created.')
+    return output_file
 
 def collation_table_html(table):
     """Process the collation table and return a HTML representation of it.
@@ -645,7 +867,7 @@ def collation_table_tei(data):
                 p.appendChild(text_node)
         else: 
             app = d.createElementNS("http://www.tei-c.org/ns/1.0", "app")
-            app.setAttribute("type","textcritical")
+            app.setAttribute("type","variants")
             p.appendChild(app)
             text_node = d.createTextNode(" ")
             p.appendChild(text_node)
@@ -658,9 +880,9 @@ def collation_table_tei(data):
                 text_node = d.createTextNode(re.sub(" ","",entry[1]))
                 rdg.appendChild(text_node)
                 if entry[1] == "":
-                    rdg.setAttribute("cause","omission")
+                    rdg.setAttribute("type","omission")
                 if entry[0] in duplicates:
-                    rdg.setAttribute("type","orthographic")
+                    rdg.setAttribute("cause","orthographic")
                 witlist = []
                 for i in entry[2:]:
                     wits = numbered_witnesses[i]
@@ -711,5 +933,7 @@ if __name__ == "__main__":
     html_file = write_html_to_file(output_html, output_file+".html")
     tei_file = write_tei_to_file(tei_table, output_file+".xml")
     csv_file = collation_table_csv_file(collation_table, output_file+".csv")
+    dot_file = collation_table_graph_file(collation_table, output_file+".dot")
+    nexus_file = collation_table_nexus_file(collation_table, output_file+".nex")
 
     logging.info('Results returned sucessfully.')

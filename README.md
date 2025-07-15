@@ -1,6 +1,6 @@
 Collator is a script (adapted from https://github.com/stenskjaer/collator) that assists in collating an arbitrary number of TEI XML transcriptions of a text. It uses the collation features provided by [CollateX](https://collatex.net/) (1.8-SNAPSHOT with added features from https://gitlab.informatik.uni-halle.de/alignment_public/tsaligner).
 
-It is basically a wrapper for the CollateX CLI. It converts the witnesses (in TEI) into plain text with a very small XSLT script (and therefore also uses saxon). It then normalizes (Unicode NFC), tokenizes, and strips all diacritics from the witnesses and finally converts them into CollateX input format (and writes this to a JSON file for later other use) that it then feeds to CollateX. The output of CollateX is finally converted to a CollateX JSON output file (for further use for example in https://enury.github.io/collation-viz/), to a CSV file, to a HTML file, and to a TEI XML file.
+It is basically a wrapper for the CollateX CLI. It converts the witnesses (in TEI) into plain text with a very small XSLT script (and therefore also uses saxon). It then normalizes (Unicode NFC), tokenizes, and strips all diacritics from the witnesses and finally converts them into CollateX input format (and writes this to a JSON file for later other use) that it then feeds to CollateX. The output of CollateX is finally converted to a CollateX JSON output file (for further use for example in https://enury.github.io/collation-viz/), to a CSV file, to a HTML file, to a Graphviz-Dot file (to be processed by [Graphviz](https://graphviz.org/)), to a Nexus file (to be processed by phylogenetic software like [SplitsTree](https://uni-tuebingen.de/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/splitstree/)) and to a TEI XML file.
 
 This is developed to handle [Patristic Text Archive Schema](https://github.com/PatristicTextArchive/Schema) compliant material, mainly in Greek, but it might handle many other TEI documents, if the XSLT script is adapted.
 
@@ -93,3 +93,28 @@ analysis:
 - gap
 - hi
 - expan (= Nomina sacra in their expanded form)
+
+
+## Errors
+
+Using the `dekker` algorithm may cause an error (most probably the same problem as in [CollateX refuses Json input](https://github.com/interedition/collatex/issues/76)):
+
+```
+Traceback (most recent call last):
+  File "pta_collator/collator.py", line 700, in <module>
+    collation_table = run_collatex(json_tmp_file)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "pta_collator/collator.py", line 134, in run_collatex
+    return json.loads(out)
+           ^^^^^^^^^^^^^^^
+  File "python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+```
+In that case, as a workaround, use `needleman-wunsch` algorithm instead.
