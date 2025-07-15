@@ -84,11 +84,26 @@
     <xsl:apply-templates/><xsl:text>–</xsl:text><xsl:value-of select="@place"/>
     <xsl:text>}</xsl:text>
   </xsl:template>
-
+  
   <xsl:template match="gap">
-    <xsl:text>{gap=</xsl:text>
-    <xsl:value-of select="@quantity"/><xsl:text></xsl:text><xsl:value-of select="@unit"/>
-    <xsl:text>}</xsl:text>
+    <xsl:variable name="count" select="@quantity"/>
+    <xsl:variable name="unit" select="@unit"/>
+    
+    <xsl:for-each select="1 to $count">
+      <xsl:choose>
+        <xsl:when test="$unit='line'">
+          <xsl:text>{</xsl:text><xsl:value-of select="$unit"/><xsl:text>}</xsl:text>
+          <xsl:text> </xsl:text>
+        </xsl:when>
+        <xsl:when test="$unit='word'">
+          <xsl:text>{</xsl:text><xsl:value-of select="$unit"/><xsl:text>}</xsl:text>
+          <xsl:text> </xsl:text>
+        </xsl:when>
+        <xsl:when test="$unit='character'">
+          <xsl:text>{c}</xsl:text>
+        </xsl:when>
+      </xsl:choose>    
+    </xsl:for-each>
   </xsl:template>
 
   <xsl:template match="choice">
