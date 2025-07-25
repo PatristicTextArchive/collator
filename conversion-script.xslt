@@ -24,6 +24,18 @@
         </xsl:analyze-string>
   </xsl:template>
 
+  <!--<xsl:template match="div[@subtype='chapter']">
+    <xsl:text>&#xa;{ch.=</xsl:text><xsl:value-of select="./@n"/><xsl:text>}
+    </xsl:text>
+   <xsl:apply-templates/>
+  </xsl:template>
+
+  <xsl:template match="div[@subtype='section']">
+    <xsl:text>&#xa;{s.=</xsl:text><xsl:value-of select="./@n"/><xsl:text>}
+    </xsl:text>
+   <xsl:apply-templates/>
+  </xsl:template>-->
+
   <xsl:template match="div//head"><xsl:text> </xsl:text><xsl:apply-templates/><xsl:text> </xsl:text></xsl:template>
 
   <xsl:template match="p">
