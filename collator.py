@@ -41,13 +41,33 @@ __version__ = '0.4.0'
 
 BASE_DIR = os.path.dirname(__file__)
 
+def normalize(inputText):
+    ## remove annotations
+    normalized = re.sub(r'[(){}=–]+', r'', inputText)
+    normalized = re.sub(r'add', r'', normalized)
+    normalized = re.sub(r'del', r'', normalized)
+    normalized = re.sub(r'margin', r'', normalized)
+    normalized = re.sub(r'above', r'', normalized)
+    normalized = re.sub(r'inline', r'', normalized)
+    normalized = re.sub(r'overline', r'', normalized)
+    normalized = re.sub(r'strikethrough', r'', normalized)
+    normalized = re.sub(r'erasure', r'', normalized)
+    normalized = re.sub(r'initial', r'', normalized)
+    normalized = re.sub(r'ekthesis', r'', normalized)
+    normalized = re.sub(r'unclear', r'', normalized)
+    ## unicode normalization
+    normalized = unicodedata.normalize("NFD", normalized).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower().strip()
+    if normalized == "":
+        normalized = " "
+    return normalized
+
 def processToken(inputText):
-    return {"t": inputText.strip(), "n": unicodedata.normalize("NFD", inputText).translate({ord(c): None for c in "̓̔́̀͂̈ͅ"}).lower().strip()}
+    return {"t": inputText.strip(), "n": normalize(inputText)}
 
 def diacritics(inputText):
-    return [processToken(token) for token in re.findall(r'\S+\s*', inputText)]
+    return [processToken(token) for token in re.findall(r'[\w\S]+', inputText, flags=re.UNICODE)]
 
-def interpunction(inputText):
+def delete_interpunction(inputText):
     return re.sub(r'[.,:··;›»⁘—\+\-\n]+', r'', inputText)
 
 def clean(text):
@@ -55,7 +75,7 @@ def clean(text):
     cleaned = re.sub(r"\n",r"",text)
     cleaned = re.sub(r"\s{2,}",r" ",cleaned)
     cleaned = re.sub(r"=\s",r"=",cleaned)
-    cleaned = re.sub(r"\s([).,··:;?]+)",r"\1",cleaned)
+    cleaned = re.sub(r"\s([–\}\).,··:;?]+)",r"\1",cleaned)
     return cleaned
 
 def convert_xml_to_plaintext(xml_files):
@@ -93,7 +113,7 @@ def convert_xml_to_plaintext(xml_files):
         text = re.search(r'\{content:([\W\w\s]*)}', str(buffer.decode('utf-8'))).group(1)
         text = unicodedata.normalize("NFC", text)
         if args['--interpunction']:
-            text = interpunction(text)
+            text = delete_interpunction(text)
         text = diacritics(clean(text))
         # convert text to tokens
         witness_dictionary = dict(id=siglum,tokens=text)
