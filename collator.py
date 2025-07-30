@@ -78,6 +78,56 @@ def clean(text):
     cleaned = re.sub(r"\s([–\}\).,··:;?]+)",r"\1",cleaned)
     return cleaned
 
+def merge_identical_rows(data):
+    """Merge identical rows in generated all_variants list of lists"""
+    merged = []
+
+    # Signature = sorted list of numeric‐tails of all sublists
+    def signature(row):
+        return sorted(tuple(sub[2:]) for sub in row)
+
+    for row in data:
+        sig = signature(row)
+
+        if merged and signature(merged[-1]) == sig:
+            # Same multiset of tails → merge all sublists by their tail‐key
+            acc = {}     # tail-tuple → full sublist with merged texts
+            order = []   # to remember the order in which tails first appear
+
+            # 1) seed from the already‐merged row
+            for sub in merged[-1]:
+                tail = tuple(sub[2:])
+                if tail not in acc:
+                    order.append(tail)
+                    acc[tail] = sub[:]  # copy entire original sublist
+
+            # 2) absorb the new row’s sublists
+            for sub in row:
+                tail = tuple(sub[2:])
+                txt0, txt1 = str(sub[0]), str(sub[1])
+                if tail in acc:
+                    # concatenate the first two fields (as long as the first is not empty)
+                    if txt0:
+                        acc[tail][0] += " " + txt0
+                        acc[tail][1] += " " + txt1
+                    else:
+                        acc[tail][0] += "" + txt0
+                        acc[tail][1] += "" + txt1
+                else:
+                    # brand-new tail (shouldn’t happen if signatures matched exactly)
+                    order.append(tail)
+                    acc[tail] = sub[:]
+
+            # 3) rebuild merged[-1] in the original order
+            merged[-1] = [acc[tail] for tail in order]
+
+        else:
+            # New signature → copy row in full
+            new_row = [sub[:] for sub in row]
+            merged.append(new_row)
+
+    return merged
+
 def convert_xml_to_plaintext(xml_files):
     """Convert the list of encoded files to plain text, using the auxilary XSLT script. This requires
     saxon installed.
@@ -280,7 +330,8 @@ def collation_table_graph_file(data, output_file):
     flatlist = []
     start = {"id":"0.0","word":"°","witnesses":data["witnesses"]}
     flatlist.append(start)
-    for list_i in all_readings:
+    all_readings_merged = merge_identical_rows(all_readings)
+    for list_i in all_readings_merged:
         tokens = [item[0] for item in list_i if item[0]]
         seen = set()
         duplicates = [x for x in tokens if x in seen or seen.add(x)] 
@@ -397,7 +448,8 @@ def collation_table_nexus_file(data,output_file):
         all_readings.append(sorted_witnesses)
     flatlist = []
     symbols = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "G", "H", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "k", "l", "m", "n", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",]
-    for list_i in all_readings:
+    all_readings_merged = merge_identical_rows(all_readings)
+    for list_i in all_readings_merged:
         tokens = [item[0] for item in list_i if item[0]]
         seen = set()
         duplicates = [x for x in tokens if x in seen or seen.add(x)]
@@ -879,7 +931,8 @@ def collation_table_tei(data):
     text.appendChild(body)
     p = d.createElementNS("http://www.tei-c.org/ns/1.0", "p")
     body.appendChild(p)
-    for list_i in all_readings:
+    all_readings_merged = merge_identical_rows(all_readings)
+    for list_i in all_readings_merged:
         # test whether there are variants. If not:
         if len(list_i) == 1:
             for entry in list_i:
@@ -897,7 +950,7 @@ def collation_table_tei(data):
             for entry in list_i:
                 rdg = d.createElementNS("http://www.tei-c.org/ns/1.0", "rdg")
                 app.appendChild(rdg)
-                text_node = d.createTextNode(re.sub(" ","",entry[1]))
+                text_node = d.createTextNode(re.sub("\\s+"," ",entry[1]))
                 rdg.appendChild(text_node)
                 if entry[1] == "":
                     rdg.setAttribute("type","omission")
